@@ -8,8 +8,8 @@ module.exports = {
     // './src/core-components/**/**/*.{html,js,jsx,ts,tsx}',
     // './src/components/**/*.{html,js,jsx,ts,tsx,mdx}',
     // './src/hooks/**/*.{html,js,jsx,ts,tsx,mdx}',
-    "./app/**/*.{js,jsx,ts,tsx}",
-    "App.tsx",
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
   ],
   presets: [require("nativewind/preset")],
   safelist: [
@@ -19,6 +19,10 @@ module.exports = {
     },
   ],
   theme: {
+    fontFamily: {
+      display: ["Poppins_500Medium"],
+      body: ["Poppins_500Medium"],
+    },
     extend: {
       colors: {
         primary: {
@@ -177,10 +181,10 @@ module.exports = {
         },
       },
       fontFamily: {
-        heading: undefined,
-        body: undefined,
-        mono: undefined,
-        roboto: ["Roboto", "sans-serif"],
+        heading: "Poppins_500Medium",
+        body: "Poppins_500Medium",
+        mono: "Poppins_500Medium",
+        roboto: ["Poppins_500Medium", "sans-serif"],
       },
       fontWeight: {
         extrablack: "950",
