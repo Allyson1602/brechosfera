@@ -56,12 +56,12 @@ export default function BaazarMap() {
           left: 0,
           right: 0,
           top: 0,
-          height: 300,
+          height: 250,
           zIndex: 20,
         }}
       />
 
-      <HStack className="h-1/4 justify-evenly items-center z-30">
+      <HStack className="h-1/5 justify-evenly items-center z-30">
         <Button>
           <Text className="text-3xl text-white font-normal">mapa</Text>
         </Button>
@@ -71,7 +71,7 @@ export default function BaazarMap() {
         </Button>
       </HStack>
 
-      <Box className="h-3/4 z-10">
+      <Box className="h-4/5 z-10">
         <MapView
           toolbarEnabled={false}
           style={{
