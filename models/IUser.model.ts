@@ -1,12 +1,16 @@
+import { baazarItemType } from "../enums/baazarItemType";
 import { ILocationModel } from "./ILocation.model";
 
 export interface IBasicBaazarModel {
   id: number;
   location: ILocationModel;
   name: string;
-  image: string;
+  logoImage: string;
+  images: string[];
+  itemsType: baazarItemType[];
   averagePrice: number;
-  evaluation: string;
+  evaluation: number;
+  openingHours: string[];
 }
 
 export interface IBaazarModel extends IBasicBaazarModel {}
