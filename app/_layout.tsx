@@ -1,9 +1,3 @@
-import { router, Slot } from "expo-router";
-import "../global.css";
-import * as Font from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
-import Entypo from "@expo/vector-icons/Entypo";
-import { useCallback, useEffect, useState } from "react";
 import {
   Poppins_100Thin,
   Poppins_100Thin_Italic,
@@ -24,8 +18,14 @@ import {
   Poppins_900Black,
   Poppins_900Black_Italic,
 } from "@expo-google-fonts/poppins";
-import { Box } from "../components/ui/box";
+import Entypo from "@expo/vector-icons/Entypo";
+import * as Font from "expo-font";
+import { Slot } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
+import { GluestackUIProvider } from "../components/ui/gluestack-ui-provider";
+import "../global.css";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -90,8 +90,10 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <Slot />
-    </View>
+    <GluestackUIProvider>
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <Slot />
+      </View>
+    </GluestackUIProvider>
   );
 }
