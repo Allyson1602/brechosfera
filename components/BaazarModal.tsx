@@ -1,7 +1,9 @@
 import * as Linking from "expo-linking";
 import { useFocusEffect } from "expo-router";
-import { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { ScrollView } from "react-native";
+import ImageView from "react-native-image-viewing";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { IBasicBaazarModel } from "../models/IUser.model";
 import { BaazarItemTypeChip } from "./BaazarItemTypeChip";
 import { Button, ButtonText } from "./ui/button";
@@ -28,6 +30,7 @@ interface IBaazarModal {
 
 export default function BaazarModal(props: IBaazarModal) {
   const { isOpen, onClose, baazar } = props;
+  const [isOpenImages, setIsOpenImages] = useState(false);
 
   const openGoogleMaps = () => {
     const latitude = baazar?.location.latitude;
@@ -52,6 +55,10 @@ export default function BaazarModal(props: IBaazarModal) {
     void openGoogleMaps();
   };
 
+  const handlePressImages = () => {
+    setIsOpenImages(true);
+  };
+
   useFocusEffect(
     useCallback(() => {
       if (!baazar) {
@@ -61,115 +68,142 @@ export default function BaazarModal(props: IBaazarModal) {
   );
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size="md"
-      className="z-40 flex gap-2 justify-end pb-32"
-      useRNModal
-    >
-      <ModalCloseButton
-        className="bg-rose-400 rounded-full p-2 shadow"
-        style={{ elevation: 5 }}
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        size="md"
+        className="z-40 flex gap-2 justify-end pb-32"
+        useRNModal
       >
-        <Icon as={CloseIcon} className="w-9 h-9 text-white rounded-full" />
-      </ModalCloseButton>
+        <ModalCloseButton
+          className="bg-rose-400 rounded-full p-2 shadow"
+          style={{ elevation: 5 }}
+        >
+          <Icon as={CloseIcon} className="w-9 h-9 text-white rounded-full" />
+        </ModalCloseButton>
 
-      <ModalContent className={"rounded-3xl bg-[#EFFDFF] w-11/12"}>
-        <ModalHeader className="flex flex-col mb-4">
-          <HStack className="gap-2 mb-4">
-            {baazar?.images.map((imageItem, index) => (
-              <Image
-                key={index}
-                alt="bazar imagem"
-                className="rounded-md w-[90] h-[60]"
-                source={{ uri: imageItem }}
-              />
-            ))}
-          </HStack>
+        <ModalContent className={"rounded-3xl bg-[#EFFDFF] w-11/12"}>
+          <ModalHeader className="flex flex-col gap-1 mb-4">
+            <Button
+              className="mb-4 mt-4"
+              variant="link"
+              onPress={handlePressImages}
+            >
+              <HStack className="gap-2">
+                {baazar?.images &&
+                  baazar.images
+                    .slice(0, 3)
+                    .map((imageItem, index) => (
+                      <Image
+                        key={index}
+                        alt="bazar imagem"
+                        className="rounded-md w-[90] h-[60]"
+                        source={{ uri: imageItem }}
+                      />
+                    ))}
+              </HStack>
+            </Button>
 
-          <Heading size="xl" className="text-[#15C3D6] font-normal">
-            {baazar?.name}
-          </Heading>
+            <Heading size="xl" className="text-[#15C3D6] font-normal">
+              {baazar?.name}
+            </Heading>
 
-          <HStack className="gap-2">
-            {baazar?.evaluation &&
-              Array.from({ length: baazar.evaluation }, (_, index) => {
-                return (
-                  <Icon
-                    key={index}
-                    as={StarIcon}
-                    className="text-yellow-400 w-7 h-7"
-                  />
-                );
-              })}
-          </HStack>
-        </ModalHeader>
+            <HStack className="gap-2">
+              {baazar?.evaluation &&
+                Array.from({ length: baazar.evaluation }, (_, index) => {
+                  return (
+                    <Icon
+                      key={index}
+                      as={StarIcon}
+                      className="text-yellow-400 w-7 h-7"
+                    />
+                  );
+                })}
+            </HStack>
+          </ModalHeader>
 
-        <ModalBody>
-          <VStack className="flex gap-4">
-            <VStack className="flex">
-              <Text>Tipos de itens</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{
-                  paddingVertical: 4,
-                }}
-              >
-                <HStack className="gap-2">
-                  {baazar?.itemsType.map((ItemTypeItem, index) => (
-                    <BaazarItemTypeChip key={index} type={ItemTypeItem} />
+          <ModalBody>
+            <VStack className="flex gap-4">
+              <VStack className="flex">
+                <Text>Tipos de itens</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{
+                    paddingVertical: 4,
+                  }}
+                >
+                  <HStack className="gap-2">
+                    {baazar?.itemsType.map((ItemTypeItem, index) => (
+                      <BaazarItemTypeChip key={index} type={ItemTypeItem} />
+                    ))}
+                  </HStack>
+                </ScrollView>
+              </VStack>
+
+              <VStack className="flex gap-1">
+                <Text>Horários de funcionamento</Text>
+
+                <VStack>
+                  {baazar?.openingHours.map((openingHourItem, index) => (
+                    <Text
+                      key={index}
+                      style={{
+                        color: "#ccc",
+                      }}
+                    >
+                      {openingHourItem}
+                    </Text>
                   ))}
+                </VStack>
+              </VStack>
+
+              <VStack className="flex gap-1">
+                <Text>Preço médio</Text>
+                <HStack className="items-start justify-start">
+                  <Text className="pr-1">R$</Text>
+
+                  <Text size="4xl">{baazar?.averagePrice}</Text>
                 </HStack>
-              </ScrollView>
-            </VStack>
-
-            <VStack className="flex gap-1">
-              <Text>Horários de funcionamento</Text>
-
-              <VStack>
-                {baazar?.openingHours.map((openingHourItem, index) => (
-                  <Text
-                    key={index}
-                    style={{
-                      color: "#ccc",
-                    }}
-                  >
-                    {openingHourItem}
-                  </Text>
-                ))}
               </VStack>
             </VStack>
+          </ModalBody>
 
-            <VStack className="flex gap-1">
-              <Text>Preço médio</Text>
-              <HStack className="items-start justify-start">
-                <Text className="pr-1">R$</Text>
+          <ModalFooter className="justify-evenly">
+            <Button
+              variant="outline"
+              className="border-[#15C3D6] rounded-lg"
+              disabled
+              isDisabled
+            >
+              <ButtonText className="text-[#15C3D6]">
+                Mais informações
+              </ButtonText>
+            </Button>
 
-                <Text size="4xl">{baazar?.averagePrice}</Text>
-              </HStack>
-            </VStack>
-          </VStack>
-        </ModalBody>
+            <Button className="bg-[#15C3D6] rounded-lg">
+              <ButtonText className="text-white" onPress={handleOpenMap}>
+                Abrir no mapa
+              </ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
-        <ModalFooter className="justify-evenly">
-          <Button
-            variant="outline"
-            className="border-[#15C3D6] rounded-lg"
-            disabled
-            isDisabled
-          >
-            <ButtonText className="text-[#15C3D6]">Mais informações</ButtonText>
-          </Button>
-
-          <Button className="bg-[#15C3D6] rounded-lg">
-            <ButtonText className="text-white" onPress={handleOpenMap}>
-              Abrir no mapa
-            </ButtonText>
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      <ImageView
+        images={baazar?.images.map((image) => ({ uri: image })) || []}
+        imageIndex={0}
+        visible={isOpenImages}
+        onRequestClose={() => setIsOpenImages(false)}
+        FooterComponent={({ imageIndex }) => (
+          <SafeAreaView className="absolute bottom-0 w-full">
+            <Text className="text-white text-center shadow" size="lg">
+              {imageIndex + 1}/{baazar?.images.length}
+            </Text>
+          </SafeAreaView>
+        )}
+      />
+    </>
   );
 }

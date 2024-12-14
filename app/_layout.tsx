@@ -26,6 +26,7 @@ import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { GluestackUIProvider } from "../components/ui/gluestack-ui-provider";
 import "../global.css";
+import { StatusBar } from "expo-status-bar";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -92,6 +93,7 @@ export default function RootLayout() {
   return (
     <GluestackUIProvider>
       <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <StatusBar translucent />
         <Slot />
       </View>
     </GluestackUIProvider>
