@@ -1,10 +1,10 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Region } from "react-native-maps";
 import LogoBaazarImage from "../../assets/app/logoBazar.png";
 import BaazarModal from "../../components/BaazarModal";
 import { Box } from "../../components/ui/box";
-import { Button } from "../../components/ui/button";
+import { Button, ButtonText } from "../../components/ui/button";
 import { HStack } from "../../components/ui/hstack";
 import { Image } from "../../components/ui/image";
 import { Text } from "../../components/ui/text";
@@ -91,9 +91,40 @@ const baazars: IBasicBaazarModel[] = [
 ];
 
 export default function BaazarMap() {
-  const [showModal, setShowModal] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const [baazarSelected, setBaazarSelected] =
     useState<IBasicBaazarModel | null>(null);
+  const [region, setRegion] = useState({
+    latitude: -15.7801,
+    longitude: -47.9292,
+    latitudeDelta: 0.2,
+    longitudeDelta: 0.2,
+  });
+
+  const bounds = {
+    north: -15.435,
+    south: -16.037,
+    east: -47.365,
+    west: -48.232,
+  };
+
+  const onRegionChange = (newRegion: Region) => {
+    const limitedRegion = {
+      ...newRegion,
+      latitude: Math.max(
+        Math.min(newRegion.latitude, bounds.north),
+        bounds.south
+      ),
+      longitude: Math.max(
+        Math.min(newRegion.longitude, bounds.east),
+        bounds.west
+      ),
+      latitudeDelta: Math.max(Math.min(newRegion.latitudeDelta, 0.5), 0.05),
+      longitudeDelta: Math.max(Math.min(newRegion.longitudeDelta, 0.5), 0.05),
+    };
+
+    setRegion(limitedRegion);
+  };
 
   const handlePressBaazar = (baazarItem: IBasicBaazarModel) => {
     setBaazarSelected(baazarItem);
@@ -102,7 +133,7 @@ export default function BaazarMap() {
 
   return (
     <>
-      <VStack className="flex-1">
+      <VStack className="flex-1 relative">
         <LinearGradient
           colors={["#15C3D6", "transparent"]}
           locations={[0.7, 1]}
@@ -132,12 +163,8 @@ export default function BaazarMap() {
             style={{
               flex: 1,
             }}
-            region={{
-              latitude: -15.709473,
-              longitude: -47.87774,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
+            region={region}
+            onRegionChangeComplete={onRegionChange}
           >
             {baazars.map((baazarItem) => (
               <Marker
@@ -160,6 +187,25 @@ export default function BaazarMap() {
             ))}
           </MapView>
         </Box>
+
+        <HStack className="absolute bottom-10 left-0">
+          {showModal ? (
+            <HStack>
+              <Button>
+                <ButtonText>Anterior</ButtonText>
+              </Button>
+              <Button>
+                <ButtonText>Próximo</ButtonText>
+              </Button>
+            </HStack>
+          ) : (
+            <HStack className="bg-amber-500">
+              <Button>
+                <ButtonText>filtro</ButtonText>
+              </Button>
+            </HStack>
+          )}
+        </HStack>
       </VStack>
 
       <BaazarModal
