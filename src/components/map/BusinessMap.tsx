@@ -1,15 +1,15 @@
-import { useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import type { Business } from '@/types/business';
-import { appConfig } from '@/config/app.config';
+import { useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import type { Business } from "@/types/business";
+import { appConfig } from "@/config/app.config";
 
-// Fix for default marker icon
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
-delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })
+  ._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   iconRetinaUrl: markerIcon2x,
@@ -18,7 +18,7 @@ L.Icon.Default.mergeOptions({
 
 interface BusinessMapProps {
   businesses: Business[];
-  center?: { lat: number; lng: number };
+  center?: { lat: number; lng: number }; // Nota: Ignoraremos isso se não for uma loja
   zoom?: number;
   onBusinessClick?: (business: Business) => void;
   selectedBusinessId?: string;
@@ -33,7 +33,7 @@ export function BusinessMap({
   zoom = 13,
   onBusinessClick,
   selectedBusinessId,
-  className = '',
+  className = "",
   showUserLocation = false,
   userLocation = null,
 }: BusinessMapProps) {
@@ -42,22 +42,30 @@ export function BusinessMap({
   const markersRef = useRef<L.Marker[]>([]);
   const userMarkerRef = useRef<L.Marker | null>(null);
 
-  const defaultCenter = {
-    lat: center?.lat ?? appConfig.defaultLocation.latitude,
-    lng: center?.lng ?? appConfig.defaultLocation.longitude,
-  };
+  // Limites geográficos do DF para o fitBounds
+  const dfBounds: L.LatLngBoundsExpression = [
+    [-15.93, -48.15], // Canto Inferior Esquerdo
+    [-15.65, -47.75], // Canto Superior Direito
+  ];
 
+  // 1. INICIALIZAÇÃO (Roda apenas uma vez)
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    mapInstanceRef.current = L.map(mapRef.current).setView(
-      [defaultCenter.lat, defaultCenter.lng],
-      zoom
-    );
+    mapInstanceRef.current = L.map(mapRef.current);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-    }).addTo(mapInstanceRef.current);
+    // Tile Layer Clean
+    L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      },
+    ).addTo(mapInstanceRef.current);
+
+    // FORÇA O MAPA A INICIAR VENDO TODO O DF
+    // Ignoramos qualquer 'center' inicial que possa ser a localização do usuário
+    mapInstanceRef.current.fitBounds(dfBounds);
 
     return () => {
       if (mapInstanceRef.current) {
@@ -67,26 +75,44 @@ export function BusinessMap({
     };
   }, []);
 
+  // 2. CONTROLE DE CÂMERA (A Regra de Ouro)
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
+    // SÓ move a câmera se houver explicitamente uma LOJA SELECIONADA.
+    // Se selectedBusinessId for nulo, ignoramos atualizações do 'center' (que viriam do GPS).
+    if (selectedBusinessId && center) {
+      mapInstanceRef.current.setView([center.lat, center.lng], zoom, {
+        animate: true,
+      });
+    }
+    // Opcional: Se desejar que ao DESELECIONAR uma loja o mapa volte pro geral:
+    // else if (!selectedBusinessId) {
+    //    mapInstanceRef.current.fitBounds(dfBounds);
+    // }
+  }, [selectedBusinessId, center, zoom]);
+
+  // 3. MARCADORES DAS LOJAS
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
-    // Add new markers
     businesses
-      .filter(b => !b.isOnline && b.address)
-      .forEach(business => {
+      .filter((b) => !b.isOnline && b.address)
+      .forEach((business) => {
         if (!business.address) return;
 
         const isSelected = business.id === selectedBusinessId;
-        
+
         const customIcon = L.divIcon({
-          className: 'custom-marker',
+          className: "custom-marker",
           html: `
             <div class="relative flex items-center justify-center">
-              <div class="w-10 h-10 rounded-full ${isSelected ? 'bg-primary scale-125' : 'bg-accent-foreground'} flex items-center justify-center shadow-lg transition-transform hover:scale-110" style="background-color: hsl(333, 71%, 50%);">
+              <div class="w-10 h-10 rounded-full ${
+                isSelected ? "bg-primary scale-125" : "bg-accent-foreground"
+              } flex items-center justify-center shadow-lg transition-transform hover:scale-110" style="background-color: hsl(333, 71%, 50%);">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
                   <path d="M3 6h18"/>
@@ -102,23 +128,17 @@ export function BusinessMap({
 
         const marker = L.marker(
           [business.address.latitude, business.address.longitude],
-          { icon: customIcon }
+          { icon: customIcon },
         ).addTo(mapInstanceRef.current!);
 
         marker.bindPopup(`
           <div class="p-2 min-w-[200px]">
-            <img src="${business.coverImage}" alt="${business.name}" class="w-full h-24 object-cover rounded-lg mb-2" />
             <h3 class="font-semibold text-foreground">${business.name}</h3>
-            <p class="text-sm text-muted-foreground">${business.address.neighborhood}, ${business.address.city}</p>
-            <div class="flex items-center gap-1 mt-1">
-              <span class="text-yellow-500">★</span>
-              <span class="text-sm font-medium">${business.rating}</span>
-              <span class="text-sm text-muted-foreground">(${business.reviewCount})</span>
-            </div>
+            <p class="text-sm text-muted-foreground">${business.address.neighborhood}</p>
           </div>
         `);
 
-        marker.on('click', () => {
+        marker.on("click", () => {
           onBusinessClick?.(business);
         });
 
@@ -126,11 +146,11 @@ export function BusinessMap({
       });
   }, [businesses, selectedBusinessId, onBusinessClick]);
 
-  // User location marker
+  // 4. MARCADOR DO USUÁRIO (Bolinha Azul)
+  // Atualiza a posição do pino, mas NUNCA chama setView/fitBounds
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
-    // Remove existing user marker
     if (userMarkerRef.current) {
       userMarkerRef.current.remove();
       userMarkerRef.current = null;
@@ -138,7 +158,7 @@ export function BusinessMap({
 
     if (showUserLocation && userLocation) {
       const userIcon = L.divIcon({
-        className: 'user-location-marker',
+        className: "user-location-marker",
         html: `
           <div class="relative flex items-center justify-center">
             <div class="w-6 h-6 rounded-full bg-blue-500 border-3 border-white shadow-lg flex items-center justify-center">
@@ -151,23 +171,15 @@ export function BusinessMap({
         iconAnchor: [12, 12],
       });
 
-      userMarkerRef.current = L.marker(
-        [userLocation.lat, userLocation.lng],
-        { icon: userIcon, zIndexOffset: 1000 }
-      ).addTo(mapInstanceRef.current);
+      // Apenas cria/move o marcador
+      userMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], {
+        icon: userIcon,
+        zIndexOffset: 1000,
+      }).addTo(mapInstanceRef.current);
 
-      userMarkerRef.current.bindPopup(`
-        <div class="p-2 text-center">
-          <p class="font-semibold">Você está aqui</p>
-        </div>
-      `);
+      // NÃO chamamos setView aqui.
     }
   }, [showUserLocation, userLocation]);
-
-  useEffect(() => {
-    if (!mapInstanceRef.current || !center) return;
-    mapInstanceRef.current.setView([center.lat, center.lng], zoom);
-  }, [center, zoom]);
 
   return (
     <div

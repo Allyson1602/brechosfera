@@ -1,34 +1,57 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { 
-  Store, MapPin, Globe, Phone, Mail, Instagram, 
-  Facebook, ExternalLink, Clock, ImagePlus, CheckCircle2
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
-import { appConfig } from '@/config/app.config';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Store,
+  MapPin,
+  Globe,
+  Phone,
+  Mail,
+  Instagram,
+  Facebook,
+  ExternalLink,
+  Clock,
+  ImagePlus,
+  CheckCircle2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { appConfig } from "@/config/app.config";
 
 const registerSchema = z.object({
-  name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  description: z.string().min(20, 'Descrição deve ter pelo menos 20 caracteres'),
-  category: z.enum(['bazar', 'brecho']),
+  name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
+  description: z
+    .string()
+    .min(20, "Descrição deve ter pelo menos 20 caracteres"),
+  category: z.enum(["bazar", "brecho"]),
   isOnline: z.boolean(),
   phone: z.string().optional(),
   whatsapp: z.string().optional(),
-  email: z.string().email('Email inválido').optional().or(z.literal('')),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
   instagram: z.string().optional(),
   facebook: z.string().optional(),
-  website: z.string().url('URL inválida').optional().or(z.literal('')),
+  website: z.string().url("URL inválida").optional().or(z.literal("")),
   street: z.string().optional(),
   number: z.string().optional(),
   neighborhood: z.string().optional(),
@@ -55,7 +78,7 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       isOnline: false,
-      category: 'brecho',
+      category: "brecho",
     },
   });
 
@@ -68,14 +91,15 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    console.log('Form data:', { ...data, itemTypes: selectedItemTypes });
-    
+
+    console.log("Form data:", { ...data, itemTypes: selectedItemTypes });
+
     toast({
-      title: 'Cadastro recebido!',
-      description: 'Analisaremos seu cadastro e entraremos em contato em breve.',
+      title: "Cadastro recebido!",
+      description:
+        "Analisaremos seu cadastro e entraremos em contato em breve.",
     });
-    
+
     setIsSubmitted(true);
   };
 
@@ -89,11 +113,11 @@ export default function RegisterPage() {
             </div>
             <h2 className="text-2xl font-bold mb-2">Cadastro Enviado!</h2>
             <p className="text-muted-foreground mb-6">
-              Recebemos seu cadastro e nossa equipe irá analisar as informações. 
+              Recebemos seu cadastro e nossa equipe irá analisar as informações.
               Entraremos em contato em até 48 horas úteis.
             </p>
             <Button onClick={() => setIsSubmitted(false)}>
-              Cadastrar outro estabelecimento
+              Cadastrar outra loja
             </Button>
           </CardContent>
         </Card>
@@ -104,7 +128,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-accent to-background py-8 px-4">
+      <section className="bg-gradient-to-b from-primary/10 via-accent to-background py-8 px-4">
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
@@ -112,10 +136,11 @@ export default function RegisterPage() {
             </div>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            Cadastre seu <span className="text-primary">estabelecimento</span>
+            Cadastre sua <span className="text-primary">loja</span>
           </h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Faça parte da nossa comunidade e alcance milhares de pessoas em busca de achados incríveis!
+            Faça parte da nossa comunidade e alcance milhares de pessoas em
+            busca de achados incríveis!
           </p>
         </div>
       </section>
@@ -136,14 +161,16 @@ export default function RegisterPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Nome do Estabelecimento *</Label>
+                <Label htmlFor="name">Nome da loja *</Label>
                 <Input
                   id="name"
                   placeholder="Ex: Brechó das Amigas"
-                  {...register('name')}
+                  {...register("name")}
                 />
                 {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.name.message}
+                  </p>
                 )}
               </div>
 
@@ -151,7 +178,9 @@ export default function RegisterPage() {
                 <Label htmlFor="category">Categoria *</Label>
                 <Select
                   defaultValue="brecho"
-                  onValueChange={(value) => setValue('category', value as 'bazar' | 'brecho')}
+                  onValueChange={(value) =>
+                    setValue("category", value as "bazar" | "brecho")
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a categoria" />
@@ -167,12 +196,14 @@ export default function RegisterPage() {
                 <Label htmlFor="description">Descrição *</Label>
                 <Textarea
                   id="description"
-                  placeholder="Descreva seu estabelecimento, o que vende, diferenciais..."
+                  placeholder="Descreva sua loja, o que vende, diferenciais..."
                   rows={4}
-                  {...register('description')}
+                  {...register("description")}
                 />
                 {errors.description && (
-                  <p className="text-sm text-destructive">{errors.description.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.description.message}
+                  </p>
                 )}
               </div>
 
@@ -190,7 +221,7 @@ export default function RegisterPage() {
                   checked={isOnline}
                   onCheckedChange={(checked) => {
                     setIsOnline(checked);
-                    setValue('isOnline', checked);
+                    setValue("isOnline", checked);
                   }}
                 />
               </div>
@@ -210,7 +241,9 @@ export default function RegisterPage() {
                 {appConfig.itemTypes.map((item) => (
                   <Badge
                     key={item}
-                    variant={selectedItemTypes.includes(item) ? 'default' : 'outline'}
+                    variant={
+                      selectedItemTypes.includes(item) ? "default" : "outline"
+                    }
                     className="cursor-pointer text-sm py-1.5 px-3"
                     onClick={() => toggleItemType(item)}
                   >
@@ -239,7 +272,7 @@ export default function RegisterPage() {
                   <Input
                     id="phone"
                     placeholder="(11) 99999-9999"
-                    {...register('phone')}
+                    {...register("phone")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -247,7 +280,7 @@ export default function RegisterPage() {
                   <Input
                     id="whatsapp"
                     placeholder="5511999999999"
-                    {...register('whatsapp')}
+                    {...register("whatsapp")}
                   />
                 </div>
               </div>
@@ -258,10 +291,12 @@ export default function RegisterPage() {
                   id="email"
                   type="email"
                   placeholder="contato@exemplo.com"
-                  {...register('email')}
+                  {...register("email")}
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 
@@ -269,13 +304,16 @@ export default function RegisterPage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="instagram" className="flex items-center gap-2">
+                  <Label
+                    htmlFor="instagram"
+                    className="flex items-center gap-2"
+                  >
                     <Instagram className="w-4 h-4" /> Instagram
                   </Label>
                   <Input
                     id="instagram"
                     placeholder="@seubrecho"
-                    {...register('instagram')}
+                    {...register("instagram")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -285,7 +323,7 @@ export default function RegisterPage() {
                   <Input
                     id="facebook"
                     placeholder="facebook.com/seubrecho"
-                    {...register('facebook')}
+                    {...register("facebook")}
                   />
                 </div>
               </div>
@@ -297,10 +335,12 @@ export default function RegisterPage() {
                 <Input
                   id="website"
                   placeholder="https://seusite.com.br"
-                  {...register('website')}
+                  {...register("website")}
                 />
                 {errors.website && (
-                  <p className="text-sm text-destructive">{errors.website.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.website.message}
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -315,7 +355,7 @@ export default function RegisterPage() {
                   Endereço
                 </CardTitle>
                 <CardDescription>
-                  Onde está localizado seu estabelecimento?
+                  Onde está localizado sua loja?
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -325,7 +365,7 @@ export default function RegisterPage() {
                     <Input
                       id="street"
                       placeholder="Rua Augusta"
-                      {...register('street')}
+                      {...register("street")}
                     />
                   </div>
                   <div className="space-y-2">
@@ -333,7 +373,7 @@ export default function RegisterPage() {
                     <Input
                       id="number"
                       placeholder="1234"
-                      {...register('number')}
+                      {...register("number")}
                     />
                   </div>
                 </div>
@@ -344,7 +384,7 @@ export default function RegisterPage() {
                     <Input
                       id="neighborhood"
                       placeholder="Centro"
-                      {...register('neighborhood')}
+                      {...register("neighborhood")}
                     />
                   </div>
                   <div className="space-y-2">
@@ -352,7 +392,7 @@ export default function RegisterPage() {
                     <Input
                       id="city"
                       placeholder="São Paulo"
-                      {...register('city')}
+                      {...register("city")}
                     />
                   </div>
                 </div>
@@ -360,7 +400,7 @@ export default function RegisterPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="state">Estado</Label>
-                    <Select onValueChange={(value) => setValue('state', value)}>
+                    <Select onValueChange={(value) => setValue("state", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
@@ -378,7 +418,7 @@ export default function RegisterPage() {
                     <Input
                       id="zipCode"
                       placeholder="00000-000"
-                      {...register('zipCode')}
+                      {...register("zipCode")}
                     />
                   </div>
                 </div>
@@ -387,8 +427,13 @@ export default function RegisterPage() {
           )}
 
           {/* Submit */}
-          <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Enviando...' : 'Enviar Cadastro'}
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Enviando..." : "Enviar Cadastro"}
           </Button>
         </form>
       </div>

@@ -58,14 +58,14 @@ export interface Business {
   updatedAt: string;
 }
 
-export type BusinessCategory = 
-  | 'bazar'
-  | 'brecho'
-  | 'advogado'
-  | 'medico'
-  | 'oficina'
-  | 'celular'
-  | 'outro';
+export type BusinessCategory =
+  | "bazar"
+  | "brecho"
+  | "advogado"
+  | "medico"
+  | "oficina"
+  | "celular"
+  | "outro";
 
 export interface BusinessFilterInput {
   category?: BusinessCategory;
@@ -86,7 +86,7 @@ export interface CreateBusinessInput {
   isOnline: boolean;
   coverImage?: string;
   images?: string[];
-  address?: Omit<Address, 'latitude' | 'longitude'>;
+  address?: Omit<Address, "latitude" | "longitude">;
   contact: Contact;
   operatingHours?: OperatingHours[];
   itemTypes?: string[];

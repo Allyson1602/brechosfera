@@ -1,15 +1,24 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, MapPin, Calendar, Globe, PlusCircle, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { appConfig } from '@/config/app.config';
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  Menu,
+  X,
+  MapPin,
+  Calendar,
+  Globe,
+  PlusCircle,
+  Search,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { appConfig } from "@/config/app.config";
+import logoImg from "@/lib/assets/images/logo.png";
 
 const navLinks = [
-  { to: '/', label: 'Mapa', icon: MapPin },
-  { to: '/online', label: 'Online', icon: Globe },
-  { to: '/eventos', label: 'Eventos', icon: Calendar },
-  { to: '/cadastrar', label: 'Cadastrar', icon: PlusCircle },
+  { to: "/", label: "Mapa", icon: MapPin },
+  { to: "/online", label: "Online", icon: Globe },
+  { to: "/eventos", label: "Eventos", icon: Calendar },
+  { to: "/cadastrar", label: "Cadastrar", icon: PlusCircle },
 ];
 
 export function Header() {
@@ -22,10 +31,14 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent-foreground flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">G</span>
-            </div>
-            <span className="font-semibold text-xl hidden sm:block">{appConfig.name}</span>
+            <img
+              src={logoImg}
+              alt={appConfig.name}
+              className="w-10 h-w-10 object-contain"
+            />
+            <span className="font-semibold text-xl text-primary hidden sm:block">
+              {appConfig.name}
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -34,8 +47,8 @@ export function Header() {
               const isActive = location.pathname === link.to;
               return (
                 <Link key={link.to} to={link.to}>
-                  <Button 
-                    variant={isActive ? 'default' : 'ghost'} 
+                  <Button
+                    variant={isActive ? "default" : "ghost"}
                     className="gap-2"
                   >
                     <link.icon className="w-4 h-4" />
@@ -45,13 +58,6 @@ export function Header() {
               );
             })}
           </nav>
-
-          {/* Search Button - Desktop */}
-          <div className="hidden md:flex items-center gap-2">
-            <Button variant="outline" size="icon" className="rounded-full">
-              <Search className="w-4 h-4" />
-            </Button>
-          </div>
 
           {/* Mobile Menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -65,13 +71,13 @@ export function Header() {
                 {navLinks.map((link) => {
                   const isActive = location.pathname === link.to;
                   return (
-                    <Link 
-                      key={link.to} 
+                    <Link
+                      key={link.to}
                       to={link.to}
                       onClick={() => setIsOpen(false)}
                     >
-                      <Button 
-                        variant={isActive ? 'default' : 'ghost'} 
+                      <Button
+                        variant={isActive ? "default" : "ghost"}
                         className="w-full justify-start gap-3"
                       >
                         <link.icon className="w-5 h-5" />

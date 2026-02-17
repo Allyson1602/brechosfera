@@ -1,15 +1,31 @@
-import { 
-  MapPin, Star, Globe, Phone, Mail, Instagram, 
-  ExternalLink, Clock, X, MessageCircle, ShoppingBag, Shirt,
-  ChevronLeft, ChevronRight
-} from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { RatingInput } from '@/components/business/RatingInput';
-import type { Business } from '@/types/business';
+import {
+  MapPin,
+  Star,
+  Globe,
+  Phone,
+  Mail,
+  Instagram,
+  ExternalLink,
+  Clock,
+  X,
+  MessageCircle,
+  ShoppingBag,
+  Shirt,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { RatingInput } from "@/components/business/RatingInput";
+import type { Business } from "@/types/business";
 
 interface BusinessDetailProps {
   business: Business | null;
@@ -17,29 +33,33 @@ interface BusinessDetailProps {
   onClose: () => void;
 }
 
-const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-export function BusinessDetail({ business, open, onClose }: BusinessDetailProps) {
+export function BusinessDetail({
+  business,
+  open,
+  onClose,
+}: BusinessDetailProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   if (!business) return null;
 
   const allImages = [business.coverImage, ...(business.images || [])].filter(
-    (img, index, self) => self.indexOf(img) === index
+    (img, index, self) => self.indexOf(img) === index,
   );
 
-  const CategoryIcon = business.category === 'bazar' ? ShoppingBag : Shirt;
+  const CategoryIcon = business.category === "bazar" ? ShoppingBag : Shirt;
 
   const handleWhatsApp = () => {
     if (business.contact.whatsapp) {
-      window.open(`https://wa.me/${business.contact.whatsapp}`, '_blank');
+      window.open(`https://wa.me/${business.contact.whatsapp}`, "_blank");
     }
   };
 
   const handleInstagram = () => {
     if (business.contact.instagram) {
-      const handle = business.contact.instagram.replace('@', '');
-      window.open(`https://instagram.com/${handle}`, '_blank');
+      const handle = business.contact.instagram.replace("@", "");
+      window.open(`https://instagram.com/${handle}`, "_blank");
     }
   };
 
@@ -48,7 +68,9 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    setCurrentImageIndex(
+      (prev) => (prev - 1 + allImages.length) % allImages.length,
+    );
   };
 
   return (
@@ -67,25 +89,29 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-card/80 backdrop-blur-sm"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-card/40 backdrop-blur-sm"
                   onClick={prevImage}
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-4 h-4" color="#000" />
                 </Button>
+
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-card/80 backdrop-blur-sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-card/40 backdrop-blur-sm"
                   onClick={nextImage}
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4" color="#000" />
                 </Button>
+
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
                   {allImages.map((_, index) => (
                     <button
                       key={index}
                       className={`w-2 h-2 rounded-full transition-colors ${
-                        index === currentImageIndex ? 'bg-primary' : 'bg-card/60'
+                        index === currentImageIndex
+                          ? "bg-primary"
+                          : "bg-card/60"
                       }`}
                       onClick={() => setCurrentImageIndex(index)}
                     />
@@ -93,13 +119,14 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
                 </div>
               </>
             )}
+
             <Button
               variant="secondary"
               size="icon"
-              className="absolute top-3 right-3 rounded-full bg-card/80 backdrop-blur-sm"
+              className="absolute top-3 right-3 rounded-full bg-card/40 backdrop-blur-sm"
               onClick={onClose}
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" color="#000" />
             </Button>
           </div>
 
@@ -109,7 +136,7 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="secondary">
                   <CategoryIcon className="w-3 h-3 mr-1" />
-                  {business.category === 'bazar' ? 'Bazar' : 'Brechó'}
+                  {business.category === "bazar" ? "Bazar" : "Brechó"}
                 </Badge>
                 {business.isOnline && (
                   <Badge className="bg-primary">
@@ -139,7 +166,8 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
                     {business.address.street}, {business.address.number}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {business.address.neighborhood}, {business.address.city} - {business.address.state}
+                    {business.address.neighborhood}, {business.address.city} -{" "}
+                    {business.address.state}
                   </p>
                 </div>
               </div>
@@ -172,9 +200,13 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   {business.operatingHours.map((hours) => (
                     <div key={hours.dayOfWeek} className="flex justify-between">
-                      <span className="text-muted-foreground">{dayNames[hours.dayOfWeek]}</span>
+                      <span className="text-muted-foreground">
+                        {dayNames[hours.dayOfWeek]}
+                      </span>
                       <span>
-                        {hours.isClosed ? 'Fechado' : `${hours.openTime} - ${hours.closeTime}`}
+                        {hours.isClosed
+                          ? "Fechado"
+                          : `${hours.openTime} - ${hours.closeTime}`}
                       </span>
                     </div>
                   ))}
@@ -187,18 +219,15 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
             {/* Contact Actions */}
             <div className="space-y-3">
               {business.contact.whatsapp && (
-                <Button 
-                  className="w-full gap-2" 
-                  onClick={handleWhatsApp}
-                >
+                <Button className="w-full gap-2" onClick={handleWhatsApp}>
                   <MessageCircle className="w-4 h-4" />
                   Enviar WhatsApp
                 </Button>
               )}
-              
+
               {business.contact.instagram && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full gap-2"
                   onClick={handleInstagram}
                 >
@@ -208,8 +237,8 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
               )}
 
               {business.contact.phone && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full gap-2"
                   onClick={() => window.open(`tel:${business.contact.phone}`)}
                 >
@@ -219,10 +248,12 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
               )}
 
               {business.contact.email && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full gap-2"
-                  onClick={() => window.open(`mailto:${business.contact.email}`)}
+                  onClick={() =>
+                    window.open(`mailto:${business.contact.email}`)
+                  }
                 >
                   <Mail className="w-4 h-4" />
                   {business.contact.email}
@@ -230,10 +261,12 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
               )}
 
               {business.contact.website && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full gap-2"
-                  onClick={() => window.open(business.contact.website, '_blank')}
+                  onClick={() =>
+                    window.open(business.contact.website, "_blank")
+                  }
                 >
                   <ExternalLink className="w-4 h-4" />
                   Visitar Site
@@ -244,7 +277,10 @@ export function BusinessDetail({ business, open, onClose }: BusinessDetailProps)
             <Separator className="my-4" />
 
             {/* Rating Input */}
-            <RatingInput businessId={business.id} businessName={business.name} />
+            <RatingInput
+              businessId={business.id}
+              businessName={business.name}
+            />
 
             {/* Tags */}
             {business.tags.length > 0 && (
