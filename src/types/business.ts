@@ -48,7 +48,7 @@ export interface Business {
   reviewCount: number;
   coverImage: string;
   images: string[];
-  address?: Address;
+  address?: string; // Address
   contact: Contact;
   operatingHours: OperatingHours[];
   itemTypes: string[];
@@ -56,6 +56,11 @@ export interface Business {
   reviews?: Review[];
   createdAt: string;
   updatedAt: string;
+  logoImage: string;
+  locations?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 export type BusinessCategory =

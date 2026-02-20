@@ -1,20 +1,22 @@
-import { useState, useMemo } from "react";
-import { MapPin, List, Filter, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BusinessMap } from "@/components/map/BusinessMap";
 import { BusinessCard } from "@/components/business/BusinessCard";
 import { BusinessDetail } from "@/components/business/BusinessDetail";
-import { useGeolocation } from "@/hooks/useGeolocation";
-import { mockBusinesses } from "@/data/mockData";
+import { BusinessMap } from "@/components/map/BusinessMap";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { appConfig } from "@/config/app.config";
-import type { Business, BusinessCategory } from "@/types/business";
-import { useQuery } from "@apollo/client/react";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import { Baazar } from "@/lib/graphql/generated";
 import { GET_STORE_TESTE } from "@/lib/graphql/queries/business";
+import { useQuery } from "@apollo/client/react";
+import { List, Loader2, MapPin } from "lucide-react";
+import { useMemo, useState } from "react";
+
+Estou querendo fazer do zero pra web, usando tanstack e redux
 
 export default function HomePage() {
-  const { loading, error, data } = useQuery(GET_STORE_TESTE);
+  const { loading, error, data } = useQuery<{ findAllLocalBaazars: Baazar[] }>(
+    GET_STORE_TESTE,
+  );
+  // const { data, loading, error } = useGetLocalBaazarsQuery();
 
   const {
     latitude,
@@ -23,26 +25,27 @@ export default function HomePage() {
     error: geoError,
   } = useGeolocation();
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
-  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(
-    null,
-  );
+  const [selectedBusiness, setSelectedBusiness] = useState<Baazar | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState<
-    BusinessCategory | "all"
-  >("all");
+  // const [categoryFilter, setCategoryFilter] = useState<
+  //   BusinessCategory | "all"
+  // >("all");
 
   console.log("GraphQL Data:", { loading, error, data });
 
   const physicalBusinesses = useMemo(() => {
-    return mockBusinesses.filter((b) => {
+    const dataItems = data?.findAllLocalBaazars || [];
+
+    return dataItems.filter((b) => {
       if (b.isOnline) return false;
-      if (categoryFilter !== "all" && b.category !== categoryFilter)
-        return false;
+
+      // if (categoryFilter !== "all" && b.category !== categoryFilter)
+      //   return false;
       return true;
     });
-  }, [categoryFilter]);
+  }, [loading]); // categoryFilter,
 
-  const handleBusinessClick = (business: Business) => {
+  const handleBusinessClick = (business: Baazar) => {
     setSelectedBusiness(business);
     setDetailOpen(true);
   };
@@ -84,7 +87,7 @@ export default function HomePage() {
           <div className="container mx-auto px-4 pt-9">
             <div className="flex items-center justify-between gap-4">
               {/* Category Filter */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              {/* <div className="flex items-center gap-2 overflow-x-auto pb-1">
                 <Badge
                   variant={categoryFilter === "all" ? "default" : "outline"}
                   className="cursor-pointer whitespace-nowrap"
@@ -102,7 +105,7 @@ export default function HomePage() {
                     {appConfig.categories[cat].label}
                   </Badge>
                 ))}
-              </div>
+              </div> */}
 
               {/* View Toggle */}
               <Tabs

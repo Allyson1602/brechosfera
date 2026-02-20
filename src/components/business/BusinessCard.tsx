@@ -1,10 +1,12 @@
-import { MapPin, Star, Globe, ShoppingBag, Shirt } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { Business } from "@/types/business";
+import { Card, CardContent } from "@/components/ui/card";
+import { calculateRating } from "@/helpers/calculateRating";
+import { parseAddress } from "@/helpers/parseAddress";
+import { Baazar } from "@/lib/graphql/generated";
+import { Globe, MapPin, Star } from "lucide-react";
 
 interface BusinessCardProps {
-  business: Business;
+  business: Baazar;
   onClick?: () => void;
   variant?: "default" | "compact";
 }
@@ -14,8 +16,6 @@ export function BusinessCard({
   onClick,
   variant = "default",
 }: BusinessCardProps) {
-  const CategoryIcon = business.category === "bazar" ? ShoppingBag : Shirt;
-
   if (variant === "compact") {
     return (
       <Card
@@ -24,17 +24,13 @@ export function BusinessCard({
       >
         <div className="flex gap-3 p-3">
           <img
-            src={business.coverImage}
+            src={business.logoImage}
             alt={business.name}
             className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
           />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <CategoryIcon className="w-4 h-4 text-primary" />
-              <h3 className="font-semibold text-sm truncate">
-                {business.name}
-              </h3>
-            </div>
+          <div className="flex-1 min-w-0 gap-1">
+            <h3 className="font-semibold text-sm truncate">{business.name}</h3>
+
             {business.isOnline ? (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Globe className="w-3 h-3" />
@@ -45,18 +41,29 @@ export function BusinessCard({
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <MapPin className="w-3 h-3" />
                   <span className="truncate">
-                    {business.address.neighborhood}
+                    {parseAddress(business.address).neighborhood},{" "}
+                    {parseAddress(business.address).city}
                   </span>
                 </div>
               )
             )}
-            <div className="flex items-center gap-1 mt-1">
-              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-              <span className="text-xs font-medium">{business.rating}</span>
-              <span className="text-xs text-muted-foreground">
-                ({business.reviewCount})
-              </span>
-            </div>
+
+            {calculateRating(business.evaluations).count > 0 ? (
+              <div className="flex items-center gap-1 mt-1">
+                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                <span className="text-xs font-medium">
+                  {calculateRating(business.evaluations).rating}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {calculateRating(business.evaluations).count}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 mt-1 text-muted-foreground">
+                <Star className="w-3 h-3" />
+                <p className="text-xs">Não avaliado</p>
+              </div>
+            )}
           </div>
         </div>
       </Card>
@@ -70,14 +77,13 @@ export function BusinessCard({
     >
       <div className="relative">
         <img
-          src={business.coverImage}
+          src={business.logoImage}
           alt={business.name}
           className="w-full h-48 object-cover transition-transform group-hover:scale-105"
         />
         <div className="absolute top-3 left-3 flex gap-2">
           <Badge variant="secondary" className="bg-slate-500 backdrop-blur-sm">
-            <CategoryIcon className="w-3 h-3 mr-1" />
-            {business.category === "bazar" ? "Bazar" : "Brechó"}
+            Loja
           </Badge>
 
           {business.isOnline && (
@@ -87,9 +93,12 @@ export function BusinessCard({
             </Badge>
           )}
         </div>
+
         <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
           <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-          <span className="text-sm font-semibold">{business.rating}</span>
+          <span className="text-sm font-semibold">
+            {calculateRating(business.evaluations).rating}
+          </span>
         </div>
       </div>
       <CardContent className="p-4">
@@ -100,7 +109,8 @@ export function BusinessCard({
           <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
             <MapPin className="w-4 h-4 flex-shrink-0" />
             <span className="truncate">
-              {business.address.neighborhood}, {business.address.city}
+              {parseAddress(business.address).neighborhood},{" "}
+              {parseAddress(business.address).city}
             </span>
           </div>
         ) : (
@@ -113,14 +123,14 @@ export function BusinessCard({
           {business.description}
         </p>
         <div className="flex flex-wrap gap-1">
-          {business.itemTypes.slice(0, 3).map((item) => (
+          {business.itemsType.slice(0, 3).map((item) => (
             <Badge key={item} variant="outline" className="text-xs">
               {item}
             </Badge>
           ))}
-          {business.itemTypes.length > 3 && (
+          {business.itemsType.length > 3 && (
             <Badge variant="outline" className="text-xs">
-              +{business.itemTypes.length - 3}
+              +{business.itemsType.length - 3}
             </Badge>
           )}
         </div>

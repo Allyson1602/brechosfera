@@ -26,9 +26,12 @@ import {
 } from "@/components/ui/sheet";
 import { RatingInput } from "@/components/business/RatingInput";
 import type { Business } from "@/types/business";
+import { Baazar } from "@/lib/graphql/generated";
+import { calculateRating } from "@/helpers/calculateRating";
+import { parseAddress } from "@/helpers/parseAddress";
 
 interface BusinessDetailProps {
-  business: Business | null;
+  business: Baazar | null;
   open: boolean;
   onClose: () => void;
 }
@@ -44,22 +47,22 @@ export function BusinessDetail({
 
   if (!business) return null;
 
-  const allImages = [business.coverImage, ...(business.images || [])].filter(
+  const allImages = [business.logoImage, ...(business.images || [])].filter(
     (img, index, self) => self.indexOf(img) === index,
   );
 
-  const CategoryIcon = business.category === "bazar" ? ShoppingBag : Shirt;
+  // const CategoryIcon = business.category === "bazar" ? ShoppingBag : Shirt;
 
   const handleWhatsApp = () => {
-    if (business.contact.whatsapp) {
-      window.open(`https://wa.me/${business.contact.whatsapp}`, "_blank");
+    if (business.linkWhatsapp) {
+      window.open(business.linkWhatsapp as unknown as string, "_blank");
     }
   };
 
   const handleInstagram = () => {
-    if (business.contact.instagram) {
-      const handle = business.contact.instagram.replace("@", "");
-      window.open(`https://instagram.com/${handle}`, "_blank");
+    if (business.linkInstagram) {
+      // const handle = business.contact.instagram.replace("@", "");
+      window.open(business.linkInstagram as unknown as string, "_blank");
     }
   };
 
@@ -134,10 +137,10 @@ export function BusinessDetail({
           <div className="p-6">
             <SheetHeader className="text-left mb-4">
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary">
+                {/* <Badge variant="secondary">
                   <CategoryIcon className="w-3 h-3 mr-1" />
                   {business.category === "bazar" ? "Bazar" : "Brechó"}
-                </Badge>
+                </Badge> */}
                 {business.isOnline && (
                   <Badge className="bg-primary">
                     <Globe className="w-3 h-3 mr-1" />
@@ -149,10 +152,12 @@ export function BusinessDetail({
               <div className="flex items-center gap-2 text-sm">
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold">{business.rating}</span>
+                  <span className="font-semibold">
+                    {calculateRating(business.evaluations).rating}
+                  </span>
                 </div>
                 <span className="text-muted-foreground">
-                  ({business.reviewCount} avaliações)
+                  ({calculateRating(business.evaluations).count} avaliações)
                 </span>
               </div>
             </SheetHeader>
@@ -162,13 +167,13 @@ export function BusinessDetail({
               <div className="flex items-start gap-2 mb-4">
                 <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm">
-                    {business.address.street}, {business.address.number}
+                  <p className="text-sm">business.address</p>
+                  {/* <p className="text-sm">
+                    {parseAddress(business.address).neighborhood}, {parseAddress(business.address).}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {business.address.neighborhood}, {business.address.city} -{" "}
-                    {business.address.state}
-                  </p>
+                    {parseAddress(business.address).city} - {parseAddress(business.address).state}
+                  </p> */}
                 </div>
               </div>
             )}
@@ -180,7 +185,7 @@ export function BusinessDetail({
             <div className="mb-4">
               <h4 className="font-semibold mb-2">Tipos de Itens</h4>
               <div className="flex flex-wrap gap-2">
-                {business.itemTypes.map((item) => (
+                {business.itemsType.map((item) => (
                   <Badge key={item} variant="outline">
                     {item}
                   </Badge>
@@ -191,23 +196,23 @@ export function BusinessDetail({
             <Separator className="my-4" />
 
             {/* Operating Hours */}
-            {business.operatingHours.length > 0 && (
+            {business.openingHours.length > 0 && (
               <div className="mb-4">
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   Horário de Funcionamento
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  {business.operatingHours.map((hours) => (
-                    <div key={hours.dayOfWeek} className="flex justify-between">
+                  {business.openingHours.map((hours) => (
+                    <div key={hours} className="flex justify-between">
                       <span className="text-muted-foreground">
-                        {dayNames[hours.dayOfWeek]}
+                        {dayNames[hours]}
                       </span>
-                      <span>
+                      {/* <span>
                         {hours.isClosed
                           ? "Fechado"
                           : `${hours.openTime} - ${hours.closeTime}`}
-                      </span>
+                      </span> */}
                     </div>
                   ))}
                 </div>
@@ -218,25 +223,25 @@ export function BusinessDetail({
 
             {/* Contact Actions */}
             <div className="space-y-3">
-              {business.contact.whatsapp && (
+              {business.linkWhatsapp && (
                 <Button className="w-full gap-2" onClick={handleWhatsApp}>
                   <MessageCircle className="w-4 h-4" />
                   Enviar WhatsApp
                 </Button>
               )}
 
-              {business.contact.instagram && (
+              {business.linkInstagram && (
                 <Button
                   variant="outline"
                   className="w-full gap-2"
                   onClick={handleInstagram}
                 >
                   <Instagram className="w-4 h-4" />
-                  {business.contact.instagram}
+                  {business.linkInstagram}
                 </Button>
               )}
 
-              {business.contact.phone && (
+              {/* {business.contact.phone && (
                 <Button
                   variant="outline"
                   className="w-full gap-2"
@@ -245,9 +250,9 @@ export function BusinessDetail({
                   <Phone className="w-4 h-4" />
                   {business.contact.phone}
                 </Button>
-              )}
+              )} */}
 
-              {business.contact.email && (
+              {/* {business.contact.email && (
                 <Button
                   variant="outline"
                   className="w-full gap-2"
@@ -258,9 +263,9 @@ export function BusinessDetail({
                   <Mail className="w-4 h-4" />
                   {business.contact.email}
                 </Button>
-              )}
+              )} */}
 
-              {business.contact.website && (
+              {/* {business.contact.website && (
                 <Button
                   variant="outline"
                   className="w-full gap-2"
@@ -271,7 +276,7 @@ export function BusinessDetail({
                   <ExternalLink className="w-4 h-4" />
                   Visitar Site
                 </Button>
-              )}
+              )} */}
             </div>
 
             <Separator className="my-4" />
@@ -283,7 +288,7 @@ export function BusinessDetail({
             />
 
             {/* Tags */}
-            {business.tags.length > 0 && (
+            {/* {business.tags.length > 0 && (
               <div className="mt-6">
                 <div className="flex flex-wrap gap-2">
                   {business.tags.map((tag) => (
@@ -296,7 +301,7 @@ export function BusinessDetail({
                   ))}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </SheetContent>

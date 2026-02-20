@@ -7,6 +7,7 @@ import { appConfig } from "@/config/app.config";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import { Baazar } from "@/lib/graphql/generated";
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })
   ._getIconUrl;
@@ -17,10 +18,10 @@ L.Icon.Default.mergeOptions({
 });
 
 interface BusinessMapProps {
-  businesses: Business[];
+  businesses: Baazar[];
   center?: { lat: number; lng: number }; // Nota: Ignoraremos isso se não for uma loja
   zoom?: number;
-  onBusinessClick?: (business: Business) => void;
+  onBusinessClick?: (business: Baazar) => void;
   selectedBusinessId?: string;
   className?: string;
   showUserLocation?: boolean;
@@ -127,14 +128,14 @@ export function BusinessMap({
         });
 
         const marker = L.marker(
-          [business.address.latitude, business.address.longitude],
+          [business.locationMap.latitude, business.locationMap.longitude],
           { icon: customIcon },
         ).addTo(mapInstanceRef.current!);
 
         marker.bindPopup(`
           <div class="p-2 min-w-[200px]">
             <h3 class="font-semibold text-foreground">${business.name}</h3>
-            <p class="text-sm text-muted-foreground">${business.address.neighborhood}</p>
+            <p class="text-sm text-muted-foreground">${business.address}</p>
           </div>
         `);
 
