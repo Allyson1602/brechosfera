@@ -10,7 +10,7 @@ import type { Business, BusinessCategory } from "@/types/business";
 
 export default function OnlinePage() {
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(
-    null
+    null,
   );
   const [detailOpen, setDetailOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,7 +116,11 @@ export default function OnlinePage() {
               {onlineBusinesses.map((business) => (
                 <BusinessCard
                   key={business.id}
-                  business={business}
+                  business={{
+                    ...business,
+                    itemsType: business.itemTypes || [],
+                    description: business.description || "",
+                  }}
                   onClick={() => handleBusinessClick(business)}
                 />
               ))}

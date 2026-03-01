@@ -10,13 +10,10 @@ import { useQuery } from "@apollo/client/react";
 import { List, Loader2, MapPin } from "lucide-react";
 import { useMemo, useState } from "react";
 
-Estou querendo fazer do zero pra web, usando tanstack e redux
-
 export default function HomePage() {
   const { loading, error, data } = useQuery<{ findAllLocalBaazars: Baazar[] }>(
     GET_STORE_TESTE,
   );
-  // const { data, loading, error } = useGetLocalBaazarsQuery();
 
   const {
     latitude,
