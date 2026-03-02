@@ -1,30 +1,44 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
-export const CREATE_BUSINESS = gql`
-  mutation CreateBusiness($input: CreateBusinessInput!) {
-    createBusiness(input: $input) {
+export const CREATE_BAAZAR = gql`
+  mutation CreateBaazar($createBaazarInput: CreateBaazarInput!) {
+    createBaazar(createBaazarInput: $createBaazarInput) {
       id
       name
-      slug
-      category
-      createdAt
+      isOnline
+      itemsType
+      address
+      logoImage
+      linkWhatsapp
+      linkInstagram
+      locationMap {
+        id
+        latitude
+        longitude
+      }
     }
   }
 `;
 
-export const UPDATE_BUSINESS = gql`
-  mutation UpdateBusiness($id: ID!, $input: UpdateBusinessInput!) {
-    updateBusiness(id: $id, input: $input) {
+export const UPDATE_BAAZAR = gql`
+  mutation UpdateBaazar($updateBaazarInput: UpdateBaazarInput!) {
+    updateBaazar(updateBaazarInput: $updateBaazarInput) {
       id
       name
-      slug
-      updatedAt
+      isOnline
+      itemsType
+      address
+      logoImage
+      linkWhatsapp
+      linkInstagram
     }
   }
 `;
 
-export const DELETE_BUSINESS = gql`
-  mutation DeleteBusiness($id: ID!) {
-    deleteBusiness(id: $id)
+export const REMOVE_BAAZAR = gql`
+  mutation RemoveBaazar($id: Int!) {
+    removeBaazar(id: $id) {
+      id
+    }
   }
 `;

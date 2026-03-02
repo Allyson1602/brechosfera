@@ -2,17 +2,15 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useMutation } from "@apollo/client/react";
 import {
   Store,
   MapPin,
   Globe,
   Phone,
-  Mail,
   Instagram,
   Facebook,
   ExternalLink,
-  Clock,
-  ImagePlus,
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,20 +36,21 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { appConfig } from "@/config/app.config";
+import { registerConfig, type RegisterItemTypeValue } from "@/config/register.config";
+import type { Baazar, BaazarItemType, CreateBaazarInput } from "@/lib/graphql/generated";
+import { CREATE_BAAZAR } from "@/lib/graphql/mutations/business";
 
 const registerSchema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
-  description: z
-    .string()
-    .min(20, "Descrição deve ter pelo menos 20 caracteres"),
+  description: z.string().min(20, "Descricao deve ter pelo menos 20 caracteres"),
   category: z.enum(["bazar", "brecho"]),
   isOnline: z.boolean(),
   phone: z.string().optional(),
   whatsapp: z.string().optional(),
-  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  email: z.string().email("Email invalido").optional().or(z.literal("")),
   instagram: z.string().optional(),
   facebook: z.string().optional(),
-  website: z.string().url("URL inválida").optional().or(z.literal("")),
+  website: z.string().url("URL invalida").optional().or(z.literal("")),
   street: z.string().optional(),
   number: z.string().optional(),
   neighborhood: z.string().optional(),
@@ -62,18 +61,31 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
+type CreateBaazarMutationResponse = {
+  createBaazar: Baazar;
+};
+
+function normalizeWhatsapp(value?: string) {
+  if (!value) return "";
+  return value.replace(/[^0-9]/g, "");
+}
+
 export default function RegisterPage() {
   const [isOnline, setIsOnline] = useState(false);
-  const [selectedItemTypes, setSelectedItemTypes] = useState<string[]>([]);
+  const [selectedItemTypes, setSelectedItemTypes] = useState<RegisterItemTypeValue[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
+
+  const [createBaazar, { loading: isCreating }] = useMutation<
+    CreateBaazarMutationResponse,
+    { createBaazarInput: CreateBaazarInput }
+  >(CREATE_BAAZAR);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
-    watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -82,25 +94,88 @@ export default function RegisterPage() {
     },
   });
 
-  const toggleItemType = (item: string) => {
+  const toggleItemType = (item: RegisterItemTypeValue) => {
     setSelectedItemTypes((prev) =>
-      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item],
     );
   };
 
   const onSubmit = async (data: RegisterFormData) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    if (selectedItemTypes.length === 0) {
+      toast({
+        title: "Selecione ao menos um tipo de item",
+        description: "Escolha ao menos um item vendido para concluir o cadastro.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    console.log("Form data:", { ...data, itemTypes: selectedItemTypes });
+    const whatsapp = normalizeWhatsapp(data.whatsapp);
+    const phone = normalizeWhatsapp(data.phone);
 
-    toast({
-      title: "Cadastro recebido!",
-      description:
-        "Analisaremos seu cadastro e entraremos em contato em breve.",
-    });
+    const linkWhatsapp = [whatsapp, phone].filter((value): value is string => !!value);
+    const linkInstagram = data.instagram?.trim()
+      ? [data.instagram.trim().replace(/^@/, "")]
+      : undefined;
 
-    setIsSubmitted(true);
+    const addressParts = [
+      data.street,
+      data.number,
+      data.neighborhood,
+      data.city,
+      data.state,
+      data.zipCode,
+    ]
+      .map((value) => value?.trim())
+      .filter((value): value is string => !!value);
+
+    const address = data.isOnline
+      ? "Online"
+      : addressParts.join(", ") || "Nao informado";
+
+    const createBaazarInput: CreateBaazarInput = {
+      name: data.name.trim(),
+      description: data.description.trim(),
+      logoImage: registerConfig.defaultLogoImage,
+      images: [],
+      itemsType: selectedItemTypes as BaazarItemType[],
+      averagePrice: registerConfig.defaultAveragePrice,
+      evaluations: [],
+      openingHours: registerConfig.defaultOpeningHours,
+      isOnline: data.isOnline,
+      isAcceptExchange: registerConfig.defaultIsAcceptExchange,
+      averageQuantity: registerConfig.defaultAverageQuantity,
+      storeSize: registerConfig.defaultStoreSize as CreateBaazarInput["storeSize"],
+      itemRenewal: registerConfig.defaultItemRenewal as CreateBaazarInput["itemRenewal"],
+      responsiblePerson: data.name.trim(),
+      address,
+      linkInstagram,
+      linkWhatsapp,
+      locationMap: data.isOnline
+        ? undefined
+        : {
+            latitude: appConfig.defaultLocation.latitude,
+            longitude: appConfig.defaultLocation.longitude,
+          },
+    };
+
+    try {
+      await createBaazar({ variables: { createBaazarInput } });
+
+      toast({
+        title: "Cadastro recebido!",
+        description: "Seu bazar foi enviado para analise com sucesso.",
+      });
+
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error("Erro ao cadastrar bazar", error);
+      toast({
+        title: "Falha ao cadastrar",
+        description: "Nao foi possivel enviar seu cadastro agora.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isSubmitted) {
@@ -111,10 +186,9 @@ export default function RegisterPage() {
             <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Cadastro Enviado!</h2>
+            <h2 className="text-2xl font-bold mb-2">Cadastro enviado!</h2>
             <p className="text-muted-foreground mb-6">
-              Recebemos seu cadastro e nossa equipe irá analisar as informações.
-              Entraremos em contato em até 48 horas úteis.
+              Recebemos seu cadastro e nossa equipe vai analisar as informacoes.
             </p>
             <Button onClick={() => setIsSubmitted(false)}>
               Cadastrar outra loja
@@ -127,7 +201,6 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">
-      {/* Hero Section */}
       <section className="bg-gradient-to-b from-primary/10 via-accent to-background py-8 px-4">
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -139,38 +212,27 @@ export default function RegisterPage() {
             Cadastre sua <span className="text-primary">loja</span>
           </h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Faça parte da nossa comunidade e alcance milhares de pessoas em
-            busca de achados incríveis!
+            Faca parte da comunidade e alcance mais pessoas em busca de achados.
           </p>
         </div>
       </section>
 
-      {/* Form */}
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* Basic Info */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Store className="w-5 h-5 text-primary" />
-                Informações Básicas
+                Informacoes basicas
               </CardTitle>
-              <CardDescription>
-                Conte-nos sobre seu bazar ou brechó
-              </CardDescription>
+              <CardDescription>Conte-nos sobre seu bazar ou brecho</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome da loja *</Label>
-                <Input
-                  id="name"
-                  placeholder="Ex: Brechó das Amigas"
-                  {...register("name")}
-                />
+                <Input id="name" placeholder="Ex: Brecho das Amigas" {...register("name")} />
                 {errors.name && (
-                  <p className="text-sm text-destructive">
-                    {errors.name.message}
-                  </p>
+                  <p className="text-sm text-destructive">{errors.name.message}</p>
                 )}
               </div>
 
@@ -186,24 +248,22 @@ export default function RegisterPage() {
                     <SelectValue placeholder="Selecione a categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="brecho">Brechó</SelectItem>
+                    <SelectItem value="brecho">Brecho</SelectItem>
                     <SelectItem value="bazar">Bazar</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Descrição *</Label>
+                <Label htmlFor="description">Descricao *</Label>
                 <Textarea
                   id="description"
-                  placeholder="Descreva sua loja, o que vende, diferenciais..."
+                  placeholder="Descreva sua loja e o que vende"
                   rows={4}
                   {...register("description")}
                 />
                 {errors.description && (
-                  <p className="text-sm text-destructive">
-                    {errors.description.message}
-                  </p>
+                  <p className="text-sm text-destructive">{errors.description.message}</p>
                 )}
               </div>
 
@@ -211,9 +271,9 @@ export default function RegisterPage() {
                 <div className="flex items-center gap-3">
                   <Globe className="w-5 h-5 text-primary" />
                   <div>
-                    <p className="font-medium">Vendas Online</p>
+                    <p className="font-medium">Vendas online</p>
                     <p className="text-sm text-muted-foreground">
-                      Marque se você vende pela internet
+                      Marque se voce vende pela internet
                     </p>
                   </div>
                 </div>
@@ -228,93 +288,55 @@ export default function RegisterPage() {
             </CardContent>
           </Card>
 
-          {/* Item Types */}
           <Card>
             <CardHeader>
-              <CardTitle>Tipos de Itens</CardTitle>
-              <CardDescription>
-                Selecione os tipos de produtos que você vende
-              </CardDescription>
+              <CardTitle>Tipos de itens</CardTitle>
+              <CardDescription>Selecione os produtos que voce vende</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {appConfig.itemTypes.map((item) => (
+                {registerConfig.itemTypes.map((item) => (
                   <Badge
-                    key={item}
-                    variant={
-                      selectedItemTypes.includes(item) ? "default" : "outline"
-                    }
+                    key={item.value}
+                    variant={selectedItemTypes.includes(item.value) ? "default" : "outline"}
                     className="cursor-pointer text-sm py-1.5 px-3"
-                    onClick={() => toggleItemType(item)}
+                    onClick={() => toggleItemType(item.value)}
                   >
-                    {item}
+                    {item.label}
                   </Badge>
                 ))}
               </div>
             </CardContent>
           </Card>
 
-          {/* Contact */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Phone className="w-5 h-5 text-primary" />
                 Contato
               </CardTitle>
-              <CardDescription>
-                Como os clientes podem entrar em contato?
-              </CardDescription>
+              <CardDescription>Como os clientes podem entrar em contato?</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Telefone</Label>
-                  <Input
-                    id="phone"
-                    placeholder="(11) 99999-9999"
-                    {...register("phone")}
-                  />
+                  <Input id="phone" placeholder="(11) 99999-9999" {...register("phone")} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="whatsapp">WhatsApp</Label>
-                  <Input
-                    id="whatsapp"
-                    placeholder="5511999999999"
-                    {...register("whatsapp")}
-                  />
+                  <Input id="whatsapp" placeholder="5511999999999" {...register("whatsapp")} />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="contato@exemplo.com"
-                  {...register("email")}
-                />
-                {errors.email && (
-                  <p className="text-sm text-destructive">
-                    {errors.email.message}
-                  </p>
-                )}
               </div>
 
               <Separator />
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="instagram"
-                    className="flex items-center gap-2"
-                  >
+                  <Label htmlFor="instagram" className="flex items-center gap-2">
                     <Instagram className="w-4 h-4" /> Instagram
                   </Label>
-                  <Input
-                    id="instagram"
-                    placeholder="@seubrecho"
-                    {...register("instagram")}
-                  />
+                  <Input id="instagram" placeholder="@seubrecho" {...register("instagram")} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="facebook" className="flex items-center gap-2">
@@ -332,68 +354,43 @@ export default function RegisterPage() {
                 <Label htmlFor="website" className="flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" /> Site
                 </Label>
-                <Input
-                  id="website"
-                  placeholder="https://seusite.com.br"
-                  {...register("website")}
-                />
+                <Input id="website" placeholder="https://seusite.com.br" {...register("website")} />
                 {errors.website && (
-                  <p className="text-sm text-destructive">
-                    {errors.website.message}
-                  </p>
+                  <p className="text-sm text-destructive">{errors.website.message}</p>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Address - Only show if not online only */}
           {!isOnline && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-primary" />
-                  Endereço
+                  Endereco
                 </CardTitle>
-                <CardDescription>
-                  Onde está localizado sua loja?
-                </CardDescription>
+                <CardDescription>Onde fica sua loja?</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-3 gap-4">
                   <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="street">Rua</Label>
-                    <Input
-                      id="street"
-                      placeholder="Rua Augusta"
-                      {...register("street")}
-                    />
+                    <Input id="street" placeholder="Rua Augusta" {...register("street")} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="number">Número</Label>
-                    <Input
-                      id="number"
-                      placeholder="1234"
-                      {...register("number")}
-                    />
+                    <Label htmlFor="number">Numero</Label>
+                    <Input id="number" placeholder="1234" {...register("number")} />
                   </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="neighborhood">Bairro</Label>
-                    <Input
-                      id="neighborhood"
-                      placeholder="Centro"
-                      {...register("neighborhood")}
-                    />
+                    <Input id="neighborhood" placeholder="Centro" {...register("neighborhood")} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="city">Cidade</Label>
-                    <Input
-                      id="city"
-                      placeholder="São Paulo"
-                      {...register("city")}
-                    />
+                    <Input id="city" placeholder="Sao Paulo" {...register("city")} />
                   </div>
                 </div>
 
@@ -415,25 +412,20 @@ export default function RegisterPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="zipCode">CEP</Label>
-                    <Input
-                      id="zipCode"
-                      placeholder="00000-000"
-                      {...register("zipCode")}
-                    />
+                    <Input id="zipCode" placeholder="00000-000" {...register("zipCode")} />
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Submit */}
           <Button
             type="submit"
             size="lg"
             className="w-full"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isCreating}
           >
-            {isSubmitting ? "Enviando..." : "Enviar Cadastro"}
+            {isSubmitting || isCreating ? "Enviando..." : "Enviar cadastro"}
           </Button>
         </form>
       </div>
