@@ -5,14 +5,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { appConfig } from "@/config/app.config";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { Baazar } from "@/lib/graphql/generated";
-import { GET_STORE_TESTE } from "@/lib/graphql/queries/business";
+import { GET_LOCAL_BAAZARS } from "@/lib/graphql/queries/business";
 import { useQuery } from "@apollo/client/react";
 import { List, Loader2, MapPin } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export default function HomePage() {
   const { loading, error, data } = useQuery<{ findAllLocalBaazars: Baazar[] }>(
-    GET_STORE_TESTE,
+    GET_LOCAL_BAAZARS,
   );
 
   const {
