@@ -65,6 +65,10 @@ type CreateBaazarMutationResponse = {
   createBaazar: Baazar;
 };
 
+type RegisterCreateBaazarInput = CreateBaazarInput & {
+  isPublished?: boolean;
+};
+
 function normalizeWhatsapp(value?: string) {
   if (!value) return "";
   return value.replace(/[^0-9]/g, "");
@@ -78,7 +82,7 @@ export default function RegisterPage() {
 
   const [createBaazar, { loading: isCreating }] = useMutation<
     CreateBaazarMutationResponse,
-    { createBaazarInput: CreateBaazarInput }
+    { createBaazarInput: RegisterCreateBaazarInput }
   >(CREATE_BAAZAR);
 
   const {
@@ -133,7 +137,7 @@ export default function RegisterPage() {
       ? "Online"
       : addressParts.join(", ") || "Nao informado";
 
-    const createBaazarInput: CreateBaazarInput = {
+    const createBaazarInput: RegisterCreateBaazarInput = {
       name: data.name.trim(),
       description: data.description.trim(),
       logoImage: registerConfig.defaultLogoImage,
@@ -143,6 +147,7 @@ export default function RegisterPage() {
       evaluations: [],
       openingHours: registerConfig.defaultOpeningHours,
       isOnline: data.isOnline,
+      isPublished: registerConfig.defaultIsPublished,
       isAcceptExchange: registerConfig.defaultIsAcceptExchange,
       averageQuantity: registerConfig.defaultAverageQuantity,
       storeSize: registerConfig.defaultStoreSize as CreateBaazarInput["storeSize"],

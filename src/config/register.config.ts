@@ -29,6 +29,7 @@ export const registerConfig = {
   defaultAveragePrice: 0,
   defaultAverageQuantity: 0,
   defaultIsAcceptExchange: false,
+  defaultIsPublished: false,
   itemTypes: [
     { label: 'Roupas Femininas', value: 'WOMENSWEAR' },
     { label: 'Roupas Masculinas', value: 'MENSWEAR' },
