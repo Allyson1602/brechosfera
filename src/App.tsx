@@ -7,6 +7,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import HomePage from "./pages/HomePage";
 import OnlinePage from "./pages/OnlinePage";
 import EventsPage from "./pages/EventsPage";
+import CreateEventPage from "./pages/CreateEventPage";
 import RegisterPage from "./pages/RegisterPage";
 import NotFound from "./pages/NotFound";
 import { ApolloProvider } from "@apollo/client/react";
@@ -20,12 +21,18 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <Routes>
             <Route element={<MainLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/online" element={<OnlinePage />} />
               <Route path="/eventos" element={<EventsPage />} />
+              <Route path="/eventos/criar" element={<CreateEventPage />} />
               <Route path="/cadastrar" element={<RegisterPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
@@ -37,3 +44,4 @@ const App = () => (
 );
 
 export default App;
+

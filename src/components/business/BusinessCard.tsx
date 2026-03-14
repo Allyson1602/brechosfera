@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { calculateRating } from "@/helpers/calculateRating";
 import { parseAddress } from "@/helpers/parseAddress";
+import { getItemTypeLabel } from "@/lib/business/itemTypeLabels";
+import { resolveImageSrc } from "@/lib/images/resolveImageSrc";
 import { Baazar } from "@/lib/graphql/generated";
 import { Globe, MapPin, Star } from "lucide-react";
 
@@ -16,6 +18,8 @@ export function BusinessCard({
   onClick,
   variant = "default",
 }: BusinessCardProps) {
+  const logoSrc = resolveImageSrc(business.logoImage);
+
   if (variant === "compact") {
     return (
       <Card
@@ -24,7 +28,7 @@ export function BusinessCard({
       >
         <div className="flex gap-3 p-3">
           <img
-            src={business.logoImage}
+            src={logoSrc}
             alt={business.name}
             className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
           />
@@ -77,7 +81,7 @@ export function BusinessCard({
     >
       <div className="relative">
         <img
-          src={business.logoImage}
+          src={logoSrc}
           alt={business.name}
           className="w-full h-48 object-cover transition-transform group-hover:scale-105"
         />
@@ -124,8 +128,8 @@ export function BusinessCard({
         </p>
         <div className="flex flex-wrap gap-1">
           {business.itemsType.slice(0, 3).map((item) => (
-            <Badge key={item} variant="outline" className="text-xs">
-              {item}
+            <Badge key={getItemTypeLabel(item)} variant="outline" className="text-xs">
+              {getItemTypeLabel(item)}
             </Badge>
           ))}
           {business.itemsType.length > 3 && (

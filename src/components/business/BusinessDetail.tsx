@@ -2,33 +2,29 @@ import {
   MapPin,
   Star,
   Globe,
-  Phone,
-  Mail,
   Instagram,
-  ExternalLink,
   Clock,
   X,
   MessageCircle,
-  ShoppingBag,
-  Shirt,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
 import { RatingInput } from "@/components/business/RatingInput";
-import type { Business } from "@/types/business";
+import { getItemTypeLabel } from "@/lib/business/itemTypeLabels";
 import { Baazar } from "@/lib/graphql/generated";
 import { calculateRating } from "@/helpers/calculateRating";
-import { parseAddress } from "@/helpers/parseAddress";
+import { resolveImageSrc } from "@/lib/images/resolveImageSrc";
 
 interface BusinessDetailProps {
   business: Baazar | null;
@@ -36,7 +32,38 @@ interface BusinessDetailProps {
   onClose: () => void;
 }
 
-const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+function normalizeStringList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item).trim())
+      .filter((item) => item.length > 0);
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    return [value.trim()];
+  }
+
+  return [];
+}
+
+function buildWhatsAppUrl(value: unknown) {
+  const firstValue = normalizeStringList(value)[0];
+
+  if (!firstValue) return null;
+  if (/^https?:\/\//i.test(firstValue)) return firstValue;
+
+  const phone = firstValue.replace(/\D/g, "");
+  return phone ? `https://wa.me/${phone}` : null;
+}
+
+function buildInstagramUrl(value: unknown) {
+  const firstValue = normalizeStringList(value)[0];
+
+  if (!firstValue) return null;
+  if (/^https?:\/\//i.test(firstValue)) return firstValue;
+
+  return `https://instagram.com/${firstValue.replace(/^@/, "")}`;
+}
 
 export function BusinessDetail({
   business,
@@ -45,32 +72,46 @@ export function BusinessDetail({
 }: BusinessDetailProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [business?.id]);
+
+  const allImages = useMemo(() => {
+    if (!business) return [];
+
+    return [business.logoImage, ...(business.images ?? [])].map((image) => resolveImageSrc(image))
+      .filter((image): image is string => !!image && image.trim().length > 0)
+      .filter((image, index, self) => self.indexOf(image) === index);
+  }, [business]);
+
   if (!business) return null;
 
-  const allImages = [business.logoImage, ...(business.images || [])].filter(
-    (img, index, self) => self.indexOf(img) === index,
-  );
-
-  // const CategoryIcon = business.category === "bazar" ? ShoppingBag : Shirt;
+  const currentImage = allImages[currentImageIndex] ?? allImages[0] ?? null;
+  const itemTypes = business.itemsType ?? [];
+  const openingHours = business.openingHours ?? [];
+  const rating = calculateRating(business.evaluations);
+  const whatsappUrl = buildWhatsAppUrl(business.linkWhatsapp);
+  const instagramUrl = buildInstagramUrl(business.linkInstagram);
 
   const handleWhatsApp = () => {
-    if (business.linkWhatsapp) {
-      window.open(business.linkWhatsapp as unknown as string, "_blank");
+    if (whatsappUrl) {
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     }
   };
 
   const handleInstagram = () => {
-    if (business.linkInstagram) {
-      // const handle = business.contact.instagram.replace("@", "");
-      window.open(business.linkInstagram as unknown as string, "_blank");
+    if (instagramUrl) {
+      window.open(instagramUrl, "_blank", "noopener,noreferrer");
     }
   };
 
   const nextImage = () => {
+    if (allImages.length === 0) return;
     setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
   };
 
   const prevImage = () => {
+    if (allImages.length === 0) return;
     setCurrentImageIndex(
       (prev) => (prev - 1 + allImages.length) % allImages.length,
     );
@@ -78,15 +119,21 @@ export function BusinessDetail({
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto p-0">
+      <SheetContent className="w-full overflow-y-auto p-0 sm:max-w-lg">
         <div className="relative">
-          {/* Image Gallery */}
           <div className="relative h-64 bg-muted">
-            <img
-              src={allImages[currentImageIndex]}
-              alt={business.name}
-              className="w-full h-full object-cover"
-            />
+            {currentImage ? (
+              <img
+                src={currentImage}
+                alt={business.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
+                Imagem indisponivel
+              </div>
+            )}
+
             {allImages.length > 1 && (
               <>
                 <Button
@@ -95,7 +142,7 @@ export function BusinessDetail({
                   className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-card/40 backdrop-blur-sm"
                   onClick={prevImage}
                 >
-                  <ChevronLeft className="w-4 h-4" color="#000" />
+                  <ChevronLeft className="h-4 w-4" color="#000" />
                 </Button>
 
                 <Button
@@ -104,17 +151,15 @@ export function BusinessDetail({
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-card/40 backdrop-blur-sm"
                   onClick={nextImage}
                 >
-                  <ChevronRight className="w-4 h-4" color="#000" />
+                  <ChevronRight className="h-4 w-4" color="#000" />
                 </Button>
 
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
                   {allImages.map((_, index) => (
                     <button
                       key={index}
-                      className={`w-2 h-2 rounded-full transition-colors ${
-                        index === currentImageIndex
-                          ? "bg-primary"
-                          : "bg-card/60"
+                      className={`h-2 w-2 rounded-full transition-colors ${
+                        index === currentImageIndex ? "bg-primary" : "bg-card/60"
                       }`}
                       onClick={() => setCurrentImageIndex(index)}
                     />
@@ -126,93 +171,77 @@ export function BusinessDetail({
             <Button
               variant="secondary"
               size="icon"
-              className="absolute top-3 right-3 rounded-full bg-card/40 backdrop-blur-sm"
+              className="absolute right-3 top-3 rounded-full bg-card/40 backdrop-blur-sm"
               onClick={onClose}
             >
-              <X className="w-4 h-4" color="#000" />
+              <X className="h-4 w-4" color="#000" />
             </Button>
           </div>
 
-          {/* Content */}
           <div className="p-6">
-            <SheetHeader className="text-left mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                {/* <Badge variant="secondary">
-                  <CategoryIcon className="w-3 h-3 mr-1" />
-                  {business.category === "bazar" ? "Bazar" : "Brechó"}
-                </Badge> */}
+            <SheetHeader className="mb-4 text-left">
+              <div className="mb-2 flex items-center gap-2">
                 {business.isOnline && (
                   <Badge className="bg-primary">
-                    <Globe className="w-3 h-3 mr-1" />
+                    <Globe className="mr-1 h-3 w-3" />
                     Online
                   </Badge>
                 )}
               </div>
               <SheetTitle className="text-2xl">{business.name}</SheetTitle>
+              <SheetDescription className="sr-only">
+                Detalhes da loja {business.name}, incluindo imagens, descricao, contatos e avaliacao.
+              </SheetDescription>
               <div className="flex items-center gap-2 text-sm">
                 <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold">
-                    {calculateRating(business.evaluations).rating}
-                  </span>
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-semibold">{rating.rating}</span>
                 </div>
-                <span className="text-muted-foreground">
-                  ({calculateRating(business.evaluations).count} avaliações)
-                </span>
+                <span className="text-muted-foreground">({rating.count} avaliacoes)</span>
               </div>
             </SheetHeader>
 
-            {/* Location */}
             {!business.isOnline && business.address && (
-              <div className="flex items-start gap-2 mb-4">
-                <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="mb-4 flex items-start gap-2">
+                <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
                 <div>
-                  <p className="text-sm">business.address</p>
-                  {/* <p className="text-sm">
-                    {parseAddress(business.address).neighborhood}, {parseAddress(business.address).}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {parseAddress(business.address).city} - {parseAddress(business.address).state}
-                  </p> */}
+                  <p className="break-words text-sm">{business.address}</p>
                 </div>
               </div>
             )}
 
-            {/* Description */}
-            <p className="text-muted-foreground mb-4">{business.description}</p>
+            <p className="mb-4 text-muted-foreground">
+              {business.description || "Sem descricao disponivel."}
+            </p>
 
-            {/* Item Types */}
-            <div className="mb-4">
-              <h4 className="font-semibold mb-2">Tipos de Itens</h4>
-              <div className="flex flex-wrap gap-2">
-                {business.itemsType.map((item) => (
-                  <Badge key={item} variant="outline">
-                    {item}
-                  </Badge>
-                ))}
+            {itemTypes.length > 0 && (
+              <div className="mb-4">
+                <h4 className="mb-2 font-semibold">Tipos de Itens</h4>
+                <div className="flex flex-wrap gap-2">
+                  {itemTypes.map((item) => (
+                    <Badge key={getItemTypeLabel(item)} variant="outline">
+                      {getItemTypeLabel(item)}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <Separator className="my-4" />
 
-            {/* Operating Hours */}
-            {business.openingHours.length > 0 && (
+            {openingHours.length > 0 && (
               <div className="mb-4">
-                <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Horário de Funcionamento
+                <h4 className="mb-2 flex items-center gap-2 font-semibold">
+                  <Clock className="h-4 w-4" />
+                  Horario de Funcionamento
                 </h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  {business.openingHours.map((hours) => (
-                    <div key={hours} className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        {dayNames[hours]}
-                      </span>
-                      {/* <span>
-                        {hours.isClosed
-                          ? "Fechado"
-                          : `${hours.openTime} - ${hours.closeTime}`}
-                      </span> */}
+                <div className="grid gap-2 text-sm">
+                  {openingHours.map((hours) => (
+                    <div
+                      key={hours}
+                      className="rounded-md border border-border/50 px-3 py-2 text-muted-foreground"
+                    >
+                      {hours}
                     </div>
                   ))}
                 </div>
@@ -221,90 +250,37 @@ export function BusinessDetail({
 
             <Separator className="my-4" />
 
-            {/* Contact Actions */}
             <div className="space-y-3">
-              {business.linkWhatsapp && (
+              {whatsappUrl && (
                 <Button className="w-full gap-2" onClick={handleWhatsApp}>
-                  <MessageCircle className="w-4 h-4" />
+                  <MessageCircle className="h-4 w-4" />
                   Enviar WhatsApp
                 </Button>
               )}
 
-              {business.linkInstagram && (
+              {instagramUrl && (
                 <Button
                   variant="outline"
                   className="w-full gap-2"
                   onClick={handleInstagram}
                 >
-                  <Instagram className="w-4 h-4" />
-                  {business.linkInstagram}
+                  <Instagram className="h-4 w-4" />
+                  Abrir Instagram
                 </Button>
               )}
-
-              {/* {business.contact.phone && (
-                <Button
-                  variant="outline"
-                  className="w-full gap-2"
-                  onClick={() => window.open(`tel:${business.contact.phone}`)}
-                >
-                  <Phone className="w-4 h-4" />
-                  {business.contact.phone}
-                </Button>
-              )} */}
-
-              {/* {business.contact.email && (
-                <Button
-                  variant="outline"
-                  className="w-full gap-2"
-                  onClick={() =>
-                    window.open(`mailto:${business.contact.email}`)
-                  }
-                >
-                  <Mail className="w-4 h-4" />
-                  {business.contact.email}
-                </Button>
-              )} */}
-
-              {/* {business.contact.website && (
-                <Button
-                  variant="outline"
-                  className="w-full gap-2"
-                  onClick={() =>
-                    window.open(business.contact.website, "_blank")
-                  }
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Visitar Site
-                </Button>
-              )} */}
             </div>
 
             <Separator className="my-4" />
 
-            {/* Rating Input */}
             <RatingInput
               businessId={business.id}
               businessName={business.name}
             />
-
-            {/* Tags */}
-            {/* {business.tags.length > 0 && (
-              <div className="mt-6">
-                <div className="flex flex-wrap gap-2">
-                  {business.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-full"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )} */}
           </div>
         </div>
       </SheetContent>
     </Sheet>
   );
 }
+
+
