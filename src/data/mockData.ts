@@ -230,6 +230,7 @@ export const mockEvents: Event[] = [
     },
     isOnline: false,
     status: "upcoming",
+    isPublished: true,
     tags: ["inverno", "promoção", "casacos"],
     createdAt: "2024-12-01",
   },
@@ -252,6 +253,7 @@ export const mockEvents: Event[] = [
     isOnline: true,
     onlineUrl: "https://instagram.com/garagemfashion/live",
     status: "ongoing",
+    isPublished: true,
     tags: ["live", "vintage", "online"],
     createdAt: "2024-12-20",
   },
@@ -283,7 +285,10 @@ export const mockEvents: Event[] = [
     },
     isOnline: false,
     status: "past",
+    isPublished: true,
     tags: ["natal", "solidário", "beneficente"],
     createdAt: "2024-12-01",
   },
 ];
+
+

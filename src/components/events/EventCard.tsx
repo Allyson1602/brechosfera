@@ -1,8 +1,9 @@
-import { Calendar, MapPin, Globe, Clock } from 'lucide-react';
+import { Calendar, MapPin, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { resolveImageSrc } from '@/lib/images/resolveImageSrc';
 import type { Event } from '@/types/event';
 
 interface EventCardProps {
@@ -20,31 +21,27 @@ export function EventCard({ event, onClick }: EventCardProps) {
   const status = statusConfig[event.status];
   const startDate = new Date(event.startDate);
   const endDate = new Date(event.endDate);
+  const coverSrc = resolveImageSrc(event.coverImage);
+  const businessCoverSrc = resolveImageSrc(event.business?.coverImage);
 
   return (
-    <Card 
+    <Card
       className="overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-border/50 group"
       onClick={onClick}
     >
       <div className="relative">
         <img
-          src={event.coverImage}
+          src={coverSrc}
           alt={event.title}
           className="w-full h-40 object-cover transition-transform group-hover:scale-105"
         />
         <Badge className={`absolute top-3 left-3 ${status.className}`}>
           {status.label}
         </Badge>
-        {event.isOnline && (
-          <Badge className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm">
-            <Globe className="w-3 h-3 mr-1" />
-            Online
-          </Badge>
-        )}
       </div>
       <CardContent className="p-4">
         <h3 className="font-semibold text-lg mb-2 line-clamp-1">{event.title}</h3>
-        
+
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-primary" />
@@ -55,7 +52,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
               )}
             </span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-primary" />
             <span>
@@ -63,7 +60,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
             </span>
           </div>
 
-          {!event.isOnline && event.address && (
+          {event.address && (
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary" />
               <span className="truncate">
@@ -75,8 +72,8 @@ export function EventCard({ event, onClick }: EventCardProps) {
 
         {event.business && (
           <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
-            <img 
-              src={event.business.coverImage} 
+            <img
+              src={businessCoverSrc}
               alt={event.business.name}
               className="w-6 h-6 rounded-full object-cover"
             />

@@ -19,7 +19,7 @@ L.Icon.Default.mergeOptions({
 
 interface BusinessMapProps {
   businesses: Baazar[];
-  center?: { lat: number; lng: number }; // Nota: Ignoraremos isso se não for uma loja
+  center?: { lat: number; lng: number }; // Nota: Ignoraremos isso se nao for uma loja
   zoom?: number;
   onBusinessClick?: (business: Baazar) => void;
   selectedBusinessId?: string;
@@ -43,19 +43,18 @@ export function BusinessMap({
   const markersRef = useRef<L.Marker[]>([]);
   const userMarkerRef = useRef<L.Marker | null>(null);
 
-  // Limites geográficos do DF para o fitBounds
+  // Limites geograficos do DF para o fitBounds
   const dfBounds: L.LatLngBoundsExpression = [
-    [-15.93, -48.15], // Canto Inferior Esquerdo
-    [-15.65, -47.75], // Canto Superior Direito
+    [-15.93, -48.15],
+    [-15.65, -47.75],
   ];
 
-  // 1. INICIALIZAÇÃO (Roda apenas uma vez)
+  // 1. INICIALIZACAO (Roda apenas uma vez)
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
     mapInstanceRef.current = L.map(mapRef.current);
 
-    // Tile Layer Clean
     L.tileLayer(
       "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
       {
@@ -64,8 +63,6 @@ export function BusinessMap({
       },
     ).addTo(mapInstanceRef.current);
 
-    // FORÇA O MAPA A INICIAR VENDO TODO O DF
-    // Ignoramos qualquer 'center' inicial que possa ser a localização do usuário
     mapInstanceRef.current.fitBounds(dfBounds);
 
     return () => {
@@ -76,21 +73,15 @@ export function BusinessMap({
     };
   }, []);
 
-  // 2. CONTROLE DE CÂMERA (A Regra de Ouro)
+  // 2. CONTROLE DE CAMERA (A Regra de Ouro)
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
-    // SÓ move a câmera se houver explicitamente uma LOJA SELECIONADA.
-    // Se selectedBusinessId for nulo, ignoramos atualizações do 'center' (que viriam do GPS).
     if (selectedBusinessId && center) {
       mapInstanceRef.current.setView([center.lat, center.lng], zoom, {
         animate: true,
       });
     }
-    // Opcional: Se desejar que ao DESELECIONAR uma loja o mapa volte pro geral:
-    // else if (!selectedBusinessId) {
-    //    mapInstanceRef.current.fitBounds(dfBounds);
-    // }
   }, [selectedBusinessId, center, zoom]);
 
   // 3. MARCADORES DAS LOJAS
@@ -147,8 +138,7 @@ export function BusinessMap({
       });
   }, [businesses, selectedBusinessId, onBusinessClick]);
 
-  // 4. MARCADOR DO USUÁRIO (Bolinha Azul)
-  // Atualiza a posição do pino, mas NUNCA chama setView/fitBounds
+  // 4. MARCADOR DO USUARIO (Bolinha Azul)
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -172,20 +162,17 @@ export function BusinessMap({
         iconAnchor: [12, 12],
       });
 
-      // Apenas cria/move o marcador
       userMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], {
         icon: userIcon,
         zIndexOffset: 1000,
       }).addTo(mapInstanceRef.current);
-
-      // NÃO chamamos setView aqui.
     }
   }, [showUserLocation, userLocation]);
 
   return (
     <div
       ref={mapRef}
-      className={`w-full h-full min-h-[400px] rounded-lg ${className}`}
+      className={`w-full h-full min-h-[280px] sm:min-h-[360px] lg:min-h-0 rounded-lg ${className}`}
       style={{ zIndex: 0 }}
     />
   );

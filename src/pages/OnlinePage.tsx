@@ -4,6 +4,7 @@ import { useQuery } from "@apollo/client/react";
 import { Input } from "@/components/ui/input";
 import { BusinessCard } from "@/components/business/BusinessCard";
 import { BusinessDetail } from "@/components/business/BusinessDetail";
+import { getItemTypeSearchValue } from "@/lib/business/itemTypeLabels";
 import { Baazar } from "@/lib/graphql/generated";
 import { GET_ONLINE_BAAZARS } from "@/lib/graphql/queries/business";
 
@@ -25,7 +26,7 @@ export default function OnlinePage() {
         return (
           b.name.toLowerCase().includes(query) ||
           (b.description || "").toLowerCase().includes(query) ||
-          b.itemsType.some((item) => String(item).toLowerCase().includes(query))
+          b.itemsType.some((item) => getItemTypeSearchValue(item).includes(query))
         );
       }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,6 +12,7 @@ import {
   Facebook,
   ExternalLink,
   CheckCircle2,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,13 +37,30 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { appConfig } from "@/config/app.config";
-import { registerConfig, type RegisterItemTypeValue } from "@/config/register.config";
-import type { Baazar, BaazarItemType, CreateBaazarInput } from "@/lib/graphql/generated";
+import {
+  registerConfig,
+  type RegisterItemTypeValue,
+} from "@/config/register.config";
+import type {
+  Baazar,
+  BaazarItemType,
+  CreateBaazarInput,
+} from "@/lib/graphql/generated";
 import { CREATE_BAAZAR } from "@/lib/graphql/mutations/business";
+import {
+  ACCEPTED_IMAGE_INPUT,
+  INVALID_IMAGE_SIZE_MESSAGE,
+  INVALID_IMAGE_TYPE_MESSAGE,
+  isAllowedImageFile,
+  isAllowedImageSize,
+  uploadImageToBackend,
+} from "@/lib/upload/uploadImage";
 
 const registerSchema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
-  description: z.string().min(20, "Descricao deve ter pelo menos 20 caracteres"),
+  description: z
+    .string()
+    .min(20, "Descricao deve ter pelo menos 20 caracteres"),
   category: z.enum(["bazar", "brecho"]),
   isOnline: z.boolean(),
   phone: z.string().optional(),
@@ -65,10 +83,6 @@ type CreateBaazarMutationResponse = {
   createBaazar: Baazar;
 };
 
-type RegisterCreateBaazarInput = CreateBaazarInput & {
-  isPublished?: boolean;
-};
-
 function normalizeWhatsapp(value?: string) {
   if (!value) return "";
   return value.replace(/[^0-9]/g, "");
@@ -76,13 +90,17 @@ function normalizeWhatsapp(value?: string) {
 
 export default function RegisterPage() {
   const [isOnline, setIsOnline] = useState(false);
-  const [selectedItemTypes, setSelectedItemTypes] = useState<RegisterItemTypeValue[]>([]);
+  const [selectedItemTypes, setSelectedItemTypes] = useState<
+    RegisterItemTypeValue[]
+  >([]);
+  const [logoImageFile, setLogoImageFile] = useState<File | null>(null);
+  const [storeImageFiles, setStoreImageFiles] = useState<File[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
 
   const [createBaazar, { loading: isCreating }] = useMutation<
     CreateBaazarMutationResponse,
-    { createBaazarInput: RegisterCreateBaazarInput }
+    { createBaazarInput: CreateBaazarInput }
   >(CREATE_BAAZAR);
 
   const {
@@ -104,11 +122,57 @@ export default function RegisterPage() {
     );
   };
 
+  const handleLogoImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] || null;
+
+    if (file && !isAllowedImageFile(file)) {
+      toast({
+        title: "Formato de imagem invalido",
+        description: INVALID_IMAGE_TYPE_MESSAGE,
+        variant: "destructive",
+      });
+      event.target.value = "";
+      setLogoImageFile(null);
+      return;
+    }
+
+    setLogoImageFile(file);
+  };
+
+const handleStoreImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+
+    if (files.some((file) => !isAllowedImageFile(file))) {
+      toast({
+        title: "Formato de imagem invalido",
+        description: INVALID_IMAGE_TYPE_MESSAGE,
+        variant: "destructive",
+      });
+      event.target.value = "";
+      setStoreImageFiles([]);
+      return;
+    }
+
+    if (files.some((file) => !isAllowedImageSize(file))) {
+      toast({
+        title: "Imagem muito grande",
+        description: INVALID_IMAGE_SIZE_MESSAGE,
+        variant: "destructive",
+      });
+      event.target.value = "";
+      setStoreImageFiles([]);
+      return;
+    }
+
+    setStoreImageFiles(files);
+  };
+
   const onSubmit = async (data: RegisterFormData) => {
     if (selectedItemTypes.length === 0) {
       toast({
         title: "Selecione ao menos um tipo de item",
-        description: "Escolha ao menos um item vendido para concluir o cadastro.",
+        description:
+          "Escolha ao menos um item vendido para concluir o cadastro.",
         variant: "destructive",
       });
       return;
@@ -117,7 +181,9 @@ export default function RegisterPage() {
     const whatsapp = normalizeWhatsapp(data.whatsapp);
     const phone = normalizeWhatsapp(data.phone);
 
-    const linkWhatsapp = [whatsapp, phone].filter((value): value is string => !!value);
+    const linkWhatsapp = [whatsapp, phone].filter(
+      (value): value is string => !!value,
+    );
     const linkInstagram = data.instagram?.trim()
       ? [data.instagram.trim().replace(/^@/, "")]
       : undefined;
@@ -137,34 +203,42 @@ export default function RegisterPage() {
       ? "Online"
       : addressParts.join(", ") || "Nao informado";
 
-    const createBaazarInput: RegisterCreateBaazarInput = {
-      name: data.name.trim(),
-      description: data.description.trim(),
-      logoImage: registerConfig.defaultLogoImage,
-      images: [],
-      itemsType: selectedItemTypes as BaazarItemType[],
-      averagePrice: registerConfig.defaultAveragePrice,
-      evaluations: [],
-      openingHours: registerConfig.defaultOpeningHours,
-      isOnline: data.isOnline,
-      isPublished: registerConfig.defaultIsPublished,
-      isAcceptExchange: registerConfig.defaultIsAcceptExchange,
-      averageQuantity: registerConfig.defaultAverageQuantity,
-      storeSize: registerConfig.defaultStoreSize as CreateBaazarInput["storeSize"],
-      itemRenewal: registerConfig.defaultItemRenewal as CreateBaazarInput["itemRenewal"],
-      responsiblePerson: data.name.trim(),
-      address,
-      linkInstagram,
-      linkWhatsapp,
-      locationMap: data.isOnline
-        ? undefined
-        : {
-            latitude: appConfig.defaultLocation.latitude,
-            longitude: appConfig.defaultLocation.longitude,
-          },
-    };
-
     try {
+      const logoImage = logoImageFile
+        ? await uploadImageToBackend(logoImageFile)
+        : registerConfig.defaultLogoImage;
+      const images = storeImageFiles.length > 0
+        ? await Promise.all(storeImageFiles.map((file) => uploadImageToBackend(file)))
+        : [];
+
+      const createBaazarInput: CreateBaazarInput = {
+        name: data.name.trim(),
+        description: data.description.trim(),
+        logoImage,
+        images,
+        itemsType: selectedItemTypes as BaazarItemType[],
+        averagePrice: registerConfig.defaultAveragePrice,
+        evaluations: [],
+        openingHours: registerConfig.defaultOpeningHours,
+        isOnline: data.isOnline,
+        isAcceptExchange: registerConfig.defaultIsAcceptExchange,
+        averageQuantity: registerConfig.defaultAverageQuantity,
+        storeSize:
+          registerConfig.defaultStoreSize as CreateBaazarInput["storeSize"],
+        itemRenewal:
+          registerConfig.defaultItemRenewal as CreateBaazarInput["itemRenewal"],
+        responsiblePerson: data.name.trim(),
+        address,
+        linkInstagram,
+        linkWhatsapp,
+        locationMap: data.isOnline
+          ? undefined
+          : {
+              latitude: appConfig.defaultLocation.latitude,
+              longitude: appConfig.defaultLocation.longitude,
+            },
+      };
+
       await createBaazar({ variables: { createBaazarInput } });
 
       toast({
@@ -175,9 +249,10 @@ export default function RegisterPage() {
       setIsSubmitted(true);
     } catch (error) {
       console.error("Erro ao cadastrar bazar", error);
+      const message = error instanceof Error ? error.message : "Nao foi possivel enviar seu cadastro agora.";
       toast({
         title: "Falha ao cadastrar",
-        description: "Nao foi possivel enviar seu cadastro agora.",
+        description: message,
         variant: "destructive",
       });
     }
@@ -230,14 +305,22 @@ export default function RegisterPage() {
                 <Store className="w-5 h-5 text-primary" />
                 Informacoes basicas
               </CardTitle>
-              <CardDescription>Conte-nos sobre seu bazar ou brecho</CardDescription>
+              <CardDescription>
+                Conte-nos sobre seu bazar ou brecho
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome da loja *</Label>
-                <Input id="name" placeholder="Ex: Brecho das Amigas" {...register("name")} />
+                <Input
+                  id="name"
+                  placeholder="Ex: Brecho das Amigas"
+                  {...register("name")}
+                />
                 {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.name.message}
+                  </p>
                 )}
               </div>
 
@@ -268,7 +351,45 @@ export default function RegisterPage() {
                   {...register("description")}
                 />
                 {errors.description && (
-                  <p className="text-sm text-destructive">{errors.description.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.description.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="logoImage" className="flex items-center gap-2">
+                  <Upload className="w-4 h-4" /> Imagem da loja
+                </Label>
+                <Input
+                  id="logoImage"
+                  type="file"
+                  accept={ACCEPTED_IMAGE_INPUT}
+                  onChange={handleLogoImageChange}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Se nao enviar, o sistema usa a imagem padrao da plataforma. Apenas JPG e PNG.
+                </p>
+              </div>
+
+<div className="space-y-2">
+                <Label htmlFor="storeImages" className="flex items-center gap-2">
+                  <Upload className="w-4 h-4" /> Fotos da loja
+                </Label>
+                <Input
+                  id="storeImages"
+                  type="file"
+                  multiple
+                  accept={ACCEPTED_IMAGE_INPUT}
+                  onChange={handleStoreImagesChange}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Adicione fotos do espaco, produtos ou vitrine. Apenas JPG e PNG.
+                </p>
+                {storeImageFiles.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {storeImageFiles.length} imagem(ns) selecionada(s)
+                  </p>
                 )}
               </div>
 
@@ -296,14 +417,20 @@ export default function RegisterPage() {
           <Card>
             <CardHeader>
               <CardTitle>Tipos de itens</CardTitle>
-              <CardDescription>Selecione os produtos que voce vende</CardDescription>
+              <CardDescription>
+                Selecione os produtos que voce vende
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {registerConfig.itemTypes.map((item) => (
                   <Badge
                     key={item.value}
-                    variant={selectedItemTypes.includes(item.value) ? "default" : "outline"}
+                    variant={
+                      selectedItemTypes.includes(item.value)
+                        ? "default"
+                        : "outline"
+                    }
                     className="cursor-pointer text-sm py-1.5 px-3"
                     onClick={() => toggleItemType(item.value)}
                   >
@@ -320,17 +447,27 @@ export default function RegisterPage() {
                 <Phone className="w-5 h-5 text-primary" />
                 Contato
               </CardTitle>
-              <CardDescription>Como os clientes podem entrar em contato?</CardDescription>
+              <CardDescription>
+                Como os clientes podem entrar em contato?
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Telefone</Label>
-                  <Input id="phone" placeholder="(11) 99999-9999" {...register("phone")} />
+                  <Input
+                    id="phone"
+                    placeholder="(11) 99999-9999"
+                    {...register("phone")}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="whatsapp">WhatsApp</Label>
-                  <Input id="whatsapp" placeholder="5511999999999" {...register("whatsapp")} />
+                  <Input
+                    id="whatsapp"
+                    placeholder="5511999999999"
+                    {...register("whatsapp")}
+                  />
                 </div>
               </div>
 
@@ -338,10 +475,17 @@ export default function RegisterPage() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="instagram" className="flex items-center gap-2">
+                  <Label
+                    htmlFor="instagram"
+                    className="flex items-center gap-2"
+                  >
                     <Instagram className="w-4 h-4" /> Instagram
                   </Label>
-                  <Input id="instagram" placeholder="@seubrecho" {...register("instagram")} />
+                  <Input
+                    id="instagram"
+                    placeholder="@seubrecho"
+                    {...register("instagram")}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="facebook" className="flex items-center gap-2">
@@ -359,9 +503,15 @@ export default function RegisterPage() {
                 <Label htmlFor="website" className="flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" /> Site
                 </Label>
-                <Input id="website" placeholder="https://seusite.com.br" {...register("website")} />
+                <Input
+                  id="website"
+                  placeholder="https://seusite.com.br"
+                  {...register("website")}
+                />
                 {errors.website && (
-                  <p className="text-sm text-destructive">{errors.website.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.website.message}
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -380,22 +530,38 @@ export default function RegisterPage() {
                 <div className="grid sm:grid-cols-3 gap-4">
                   <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="street">Rua</Label>
-                    <Input id="street" placeholder="Rua Augusta" {...register("street")} />
+                    <Input
+                      id="street"
+                      placeholder="Rua Augusta"
+                      {...register("street")}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="number">Numero</Label>
-                    <Input id="number" placeholder="1234" {...register("number")} />
+                    <Input
+                      id="number"
+                      placeholder="1234"
+                      {...register("number")}
+                    />
                   </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="neighborhood">Bairro</Label>
-                    <Input id="neighborhood" placeholder="Centro" {...register("neighborhood")} />
+                    <Input
+                      id="neighborhood"
+                      placeholder="Centro"
+                      {...register("neighborhood")}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="city">Cidade</Label>
-                    <Input id="city" placeholder="Sao Paulo" {...register("city")} />
+                    <Input
+                      id="city"
+                      placeholder="Sao Paulo"
+                      {...register("city")}
+                    />
                   </div>
                 </div>
 
@@ -417,7 +583,11 @@ export default function RegisterPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="zipCode">CEP</Label>
-                    <Input id="zipCode" placeholder="00000-000" {...register("zipCode")} />
+                    <Input
+                      id="zipCode"
+                      placeholder="00000-000"
+                      {...register("zipCode")}
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -437,3 +607,13 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+

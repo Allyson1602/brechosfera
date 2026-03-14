@@ -9,8 +9,12 @@ export const GET_LOCAL_BAAZARS = gql`
       averagePrice
       evaluations
       isOnline
-      evaluations
       address
+      description
+      images
+      linkInstagram
+      linkWhatsapp
+      openingHours
       itemsType
       locationMap {
         id

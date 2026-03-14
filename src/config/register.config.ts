@@ -1,4 +1,4 @@
-export const registerItemTypeValues = [
+﻿export const registerItemTypeValues = [
   'WOMENSWEAR',
   'MENSWEAR',
   'CHILDRENSWEAR',
@@ -22,14 +22,13 @@ export const registerItemTypeValues = [
 export type RegisterItemTypeValue = (typeof registerItemTypeValues)[number];
 
 export const registerConfig = {
-  defaultLogoImage: '/favicon.ico',
+  defaultLogoImage: 'http://localhost:3000/uploads/defaults/bazar-1.svg',
   defaultOpeningHours: ['Seg-Sab: 09:00-18:00'],
   defaultStoreSize: 'MEDIUM' as const,
   defaultItemRenewal: 'MONTHLY' as const,
   defaultAveragePrice: 0,
   defaultAverageQuantity: 0,
   defaultIsAcceptExchange: false,
-  defaultIsPublished: false,
   itemTypes: [
     { label: 'Roupas Femininas', value: 'WOMENSWEAR' },
     { label: 'Roupas Masculinas', value: 'MENSWEAR' },

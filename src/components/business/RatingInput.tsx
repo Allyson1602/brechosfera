@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useMutation } from "@apollo/client/react";
 import { Star, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRating, formatTimeRemaining } from "@/hooks/useRating";
+import { GET_LOCAL_BAAZARS, GET_ONLINE_BAAZARS } from "@/lib/graphql/queries/business";
+import { UPDATE_BAAZAR } from "@/lib/graphql/mutations/business";
 import { toast } from "sonner";
 
 interface RatingInputProps {
@@ -10,36 +13,66 @@ interface RatingInputProps {
 }
 
 export function RatingInput({ businessId, businessName }: RatingInputProps) {
-  const { canRate, timeUntilCanRate, submitRating, userRating } =
+  const { canRate, timeUntilCanRate, registerRating, userRating } =
     useRating(businessId);
   const [hoveredStar, setHoveredStar] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number>(userRating ?? 0);
+  const [updateBaazar, { loading }] = useMutation(UPDATE_BAAZAR, {
+    refetchQueries: [GET_LOCAL_BAAZARS, GET_ONLINE_BAAZARS],
+    awaitRefetchQueries: false,
+  });
 
-  const handleSubmitRating = () => {
+  useEffect(() => {
+    setSelectedRating(userRating ?? 0);
+  }, [businessId, userRating]);
+
+  const handleSubmitRating = async () => {
     if (selectedRating === 0) {
-      toast.error("Selecione uma avaliação");
+      toast.error("Selecione uma avaliacao");
       return;
     }
 
-    const success = submitRating(selectedRating);
-    if (success) {
+    if (!canRate) {
+      toast.error("Voce ja avaliou uma loja recentemente. Tente novamente mais tarde.");
+      return;
+    }
+
+    const numericBusinessId = Number(businessId);
+    if (!Number.isFinite(numericBusinessId)) {
+      toast.error("Nao foi possivel identificar a loja para registrar a avaliacao.");
+      return;
+    }
+
+    try {
+      await updateBaazar({
+        variables: {
+          updateBaazarInput: {
+            id: numericBusinessId,
+            newEvaluation: selectedRating,
+          },
+        },
+      });
+
+      registerRating(selectedRating);
       toast.success(
-        `Você avaliou ${businessName} com ${selectedRating} estrela${
+        `Voce avaliou ${businessName} com ${selectedRating} estrela${
           selectedRating > 1 ? "s" : ""
-        }!`
+        }!`,
       );
-    } else {
-      toast.error("Você já avaliou recentemente. Tente novamente mais tarde.");
+    } catch {
+      toast.error("Nao foi possivel salvar sua avaliacao agora.");
     }
   };
 
   const displayRating = hoveredStar ?? selectedRating;
+  const isBlockedByCurrentBusiness = !canRate && userRating !== null;
+  const isBlockedByAnotherBusiness = !canRate && userRating === null;
 
-  if (!canRate && userRating !== null) {
+  if (isBlockedByCurrentBusiness) {
     return (
       <div className="bg-muted/50 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-medium">Sua avaliação:</span>
+          <span className="text-sm font-medium">Sua avaliacao:</span>
           <div className="flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
@@ -56,7 +89,21 @@ export function RatingInput({ businessId, businessName }: RatingInputProps) {
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Clock className="w-3 h-3" />
           <span>
-            Poderá avaliar novamente em {formatTimeRemaining(timeUntilCanRate)}
+            Podera avaliar qualquer loja novamente em {formatTimeRemaining(timeUntilCanRate)}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isBlockedByAnotherBusiness) {
+    return (
+      <div className="bg-muted/50 rounded-lg p-4">
+        <p className="text-sm font-medium mb-2">Avaliacao indisponivel no momento</p>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Clock className="w-3 h-3" />
+          <span>
+            Voce podera avaliar qualquer loja novamente em {formatTimeRemaining(timeUntilCanRate)}
           </span>
         </div>
       </div>
@@ -76,6 +123,7 @@ export function RatingInput({ businessId, businessName }: RatingInputProps) {
               onMouseEnter={() => setHoveredStar(star)}
               onMouseLeave={() => setHoveredStar(null)}
               onClick={() => setSelectedRating(star)}
+              disabled={loading}
             >
               <Star
                 className={`w-6 h-6 transition-colors ${
@@ -89,10 +137,10 @@ export function RatingInput({ businessId, businessName }: RatingInputProps) {
         </div>
         <Button
           size="sm"
-          onClick={handleSubmitRating}
-          disabled={selectedRating === 0}
+          onClick={() => void handleSubmitRating()}
+          disabled={selectedRating === 0 || loading}
         >
-          Avaliar
+          {loading ? "Salvando..." : "Avaliar"}
         </Button>
       </div>
     </div>
