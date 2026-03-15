@@ -4,7 +4,7 @@ import type { BusinessCategory } from "@/types/business";
 export const appConfig = {
   // Informações gerais do app
   name: "Brechosfera",
-  description: "Encontre os melhores bazares e brechós perto de você",
+  description: "Os melhores bazares e brechós perto de você",
   tagline: "Seu guia de achados únicos",
 
   // Configurações de localização padrão (Brasil)

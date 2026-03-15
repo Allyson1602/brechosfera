@@ -24,19 +24,15 @@ const navLinks = [
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const isHomePage = location.pathname === "/";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+    <header className={isHomePage ? "sticky top-0 z-50 w-full border-none bg-transparent shadow-none backdrop-blur-none" : "sticky top-0 z-50 w-full border-b border-border/50 bg-transparent"}>
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <img
-              src={logoImg}
-              alt={appConfig.name}
-              className="w-10 h-w-10 object-contain"
-            />
-            <span className="font-semibold text-xl text-primary hidden sm:block">
+            <span className="hidden font-brand text-4xl leading-none text-primary sm:block">
               {appConfig.name}
             </span>
           </Link>
