@@ -138,7 +138,7 @@ export default function HomePage() {
   const hasBusinesses = physicalBusinesses.length > 0;
 
   return (
-    <div className="min-h-[calc(100dvh-4rem)] bg-transparent overflow-y-auto lg:h-[calc(100dvh-4rem)] lg:min-h-0 lg:overflow-hidden lg:flex lg:flex-col">
+    <div className="bg-transparent overflow-y-auto lg:h-[calc(100dvh-4rem)] lg:min-h-0 lg:overflow-hidden lg:flex lg:flex-col">
       <section className="bg-transparent pt-6 md:pt-8 pb-4 px-4 lg:pt-3 lg:pb-2 lg:shrink-0">
         <div className="container mx-auto text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">

@@ -7,7 +7,13 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,7 +51,9 @@ const FIND_BAAZARS_BY_NAME = gql`
 const createEventSchema = z
   .object({
     title: z.string().min(3, "Titulo deve ter pelo menos 3 caracteres"),
-    description: z.string().min(20, "Descricao deve ter pelo menos 20 caracteres"),
+    description: z
+      .string()
+      .min(20, "Descricao deve ter pelo menos 20 caracteres"),
     startDate: z.string().min(1, "Informe a data de inicio"),
     startTime: z.string().min(1, "Informe o horario de inicio"),
     endDate: z.string().min(1, "Informe a data de fim"),
@@ -58,15 +66,18 @@ const createEventSchema = z
     state: z.string().min(2, "Informe o estado"),
     zipCode: z.string().min(8, "Informe o CEP"),
   })
-  .refine((values) => {
-    const startDateTime = new Date(`${values.startDate}T${values.startTime}`);
-    const endDateTime = new Date(`${values.endDate}T${values.endTime}`);
+  .refine(
+    (values) => {
+      const startDateTime = new Date(`${values.startDate}T${values.startTime}`);
+      const endDateTime = new Date(`${values.endDate}T${values.endTime}`);
 
-    return endDateTime >= startDateTime;
-  }, {
-    path: ["endTime"],
-    message: "Data e horario de fim devem ser maiores ou iguais ao inicio",
-  });
+      return endDateTime >= startDateTime;
+    },
+    {
+      path: ["endTime"],
+      message: "Data e horario de fim devem ser maiores ou iguais ao inicio",
+    },
+  );
 
 type CreateEventFormData = z.infer<typeof createEventSchema>;
 
@@ -84,7 +95,9 @@ export default function CreateEventPage() {
   const [createEvent, { loading }] = useMutation(CREATE_EVENT);
   const [businessSearch, setBusinessSearch] = useState("");
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
-  const [selectedBaazar, setSelectedBaazar] = useState<BaazarSearchData["findBaazarsByName"][number] | null>(null);
+  const [selectedBaazar, setSelectedBaazar] = useState<
+    BaazarSearchData["findBaazarsByName"][number] | null
+  >(null);
 
   const [searchBaazars, { data: baazarData, loading: baazarLoading }] =
     useLazyQuery<BaazarSearchData>(FIND_BAAZARS_BY_NAME);
@@ -124,7 +137,10 @@ export default function CreateEventPage() {
     return () => clearTimeout(timeoutId);
   }, [businessSearch, searchBaazars, selectedBaazar]);
 
-  const baazarOptions = useMemo(() => baazarData?.findBaazarsByName || [], [baazarData]);
+  const baazarOptions = useMemo(
+    () => baazarData?.findBaazarsByName || [],
+    [baazarData],
+  );
 
   const handleCoverImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
@@ -201,7 +217,10 @@ export default function CreateEventPage() {
 
       navigate("/eventos");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Nao foi possivel salvar o evento agora.";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel salvar o evento agora.";
       toast({
         title: "Erro ao criar evento",
         description: message,
@@ -211,8 +230,8 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
-      <section className="bg-gradient-to-b from-primary/10 via-accent to-background py-8 px-4">
+    <div>
+      <section className="bg-transparent py-8 px-4">
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
@@ -233,7 +252,8 @@ export default function CreateEventPage() {
           <CardHeader>
             <CardTitle>Dados do evento</CardTitle>
             <CardDescription>
-              Vincular com um bazar e opcional. O evento continua valido sem vinculo.
+              Vincular com um bazar e opcional. O evento continua valido sem
+              vinculo.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -241,18 +261,38 @@ export default function CreateEventPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="title">Titulo *</Label>
-                  <Input id="title" placeholder="Ex: Feira vintage de outono" {...register("title")} />
-                  {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+                  <Input
+                    id="title"
+                    placeholder="Ex: Feira vintage de outono"
+                    {...register("title")}
+                  />
+                  {errors.title && (
+                    <p className="text-sm text-destructive">
+                      {errors.title.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="description">Descricao *</Label>
-                  <Textarea id="description" rows={4} placeholder="Descreva o evento" {...register("description")} />
-                  {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
+                  <Textarea
+                    id="description"
+                    rows={4}
+                    placeholder="Descreva o evento"
+                    {...register("description")}
+                  />
+                  {errors.description && (
+                    <p className="text-sm text-destructive">
+                      {errors.description.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="coverImage" className="flex items-center gap-2">
+                  <Label
+                    htmlFor="coverImage"
+                    className="flex items-center gap-2"
+                  >
                     <Upload className="w-4 h-4" /> Imagem de capa
                   </Label>
                   <Input
@@ -262,21 +302,29 @@ export default function CreateEventPage() {
                     onChange={handleCoverImageChange}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Se nao enviar, o sistema usa a imagem padrao da plataforma. Apenas JPG e PNG.
+                    Se nao enviar, o sistema usa a imagem padrao da plataforma.
+                    Apenas JPG e PNG.
                   </p>
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="baazar-search">Bazar vinculado (opcional)</Label>
+                  <Label htmlFor="baazar-search">
+                    Bazar vinculado (opcional)
+                  </Label>
                   {selectedBaazar ? (
                     <div className="flex items-center justify-between rounded-md border border-border p-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={resolveImageSrc(selectedBaazar.logoImage, "http://localhost:3000/uploads/defaults/bazar-1.svg")}
+                          src={resolveImageSrc(
+                            selectedBaazar.logoImage,
+                            "http://localhost:3000/uploads/defaults/bazar-1.svg",
+                          )}
                           alt={selectedBaazar.name}
                           className="w-8 h-8 rounded-full object-cover"
                         />
-                        <span className="text-sm font-medium">{selectedBaazar.name}</span>
+                        <span className="text-sm font-medium">
+                          {selectedBaazar.name}
+                        </span>
                       </div>
                       <Button
                         type="button"
@@ -302,52 +350,82 @@ export default function CreateEventPage() {
                         />
                       </div>
                       {baazarLoading && (
-                        <p className="text-xs text-muted-foreground">Buscando bazares...</p>
+                        <p className="text-xs text-muted-foreground">
+                          Buscando bazares...
+                        </p>
                       )}
-                      {!baazarLoading && businessSearch.trim().length >= 2 && baazarOptions.length > 0 && (
-                        <div className="rounded-md border border-border divide-y divide-border max-h-56 overflow-y-auto">
-                          {baazarOptions.map((baazar) => (
-                            <button
-                              key={baazar.id}
-                              type="button"
-                              className="w-full px-3 py-2 text-left hover:bg-accent/50 flex items-center gap-3"
-                              onClick={() => {
-                                setSelectedBaazar(baazar);
-                                setBusinessSearch(baazar.name);
-                              }}
-                            >
-                              <img
-                                src={resolveImageSrc(baazar.logoImage, "http://localhost:3000/uploads/defaults/bazar-1.svg")}
-                                alt={baazar.name}
-                                className="w-7 h-7 rounded-full object-cover"
-                              />
-                              <span className="text-sm">{baazar.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      {!baazarLoading &&
+                        businessSearch.trim().length >= 2 &&
+                        baazarOptions.length > 0 && (
+                          <div className="rounded-md border border-border divide-y divide-border max-h-56 overflow-y-auto">
+                            {baazarOptions.map((baazar) => (
+                              <button
+                                key={baazar.id}
+                                type="button"
+                                className="w-full px-3 py-2 text-left hover:bg-accent/50 flex items-center gap-3"
+                                onClick={() => {
+                                  setSelectedBaazar(baazar);
+                                  setBusinessSearch(baazar.name);
+                                }}
+                              >
+                                <img
+                                  src={resolveImageSrc(
+                                    baazar.logoImage,
+                                    "http://localhost:3000/uploads/defaults/bazar-1.svg",
+                                  )}
+                                  alt={baazar.name}
+                                  className="w-7 h-7 rounded-full object-cover"
+                                />
+                                <span className="text-sm">{baazar.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                     </div>
                   )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="startDate">Data de inicio *</Label>
-                  <Input id="startDate" type="date" {...register("startDate")} />
-                  {errors.startDate && <p className="text-sm text-destructive">{errors.startDate.message}</p>}
+                  <Input
+                    id="startDate"
+                    type="date"
+                    {...register("startDate")}
+                  />
+                  {errors.startDate && (
+                    <p className="text-sm text-destructive">
+                      {errors.startDate.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="startTime" className="flex items-center gap-2">
+                  <Label
+                    htmlFor="startTime"
+                    className="flex items-center gap-2"
+                  >
                     <Clock3 className="w-4 h-4" /> Horario de inicio *
                   </Label>
-                  <Input id="startTime" type="time" {...register("startTime")} />
-                  {errors.startTime && <p className="text-sm text-destructive">{errors.startTime.message}</p>}
+                  <Input
+                    id="startTime"
+                    type="time"
+                    {...register("startTime")}
+                  />
+                  {errors.startTime && (
+                    <p className="text-sm text-destructive">
+                      {errors.startTime.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="endDate">Data de fim *</Label>
                   <Input id="endDate" type="date" {...register("endDate")} />
-                  {errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
+                  {errors.endDate && (
+                    <p className="text-sm text-destructive">
+                      {errors.endDate.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -355,12 +433,20 @@ export default function CreateEventPage() {
                     <Clock3 className="w-4 h-4" /> Horario de fim *
                   </Label>
                   <Input id="endTime" type="time" {...register("endTime")} />
-                  {errors.endTime && <p className="text-sm text-destructive">{errors.endTime.message}</p>}
+                  {errors.endTime && (
+                    <p className="text-sm text-destructive">
+                      {errors.endTime.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="tags">Tags (separadas por virgula)</Label>
-                  <Input id="tags" placeholder="vintage, promocao, outlet" {...register("tags")} />
+                  <Input
+                    id="tags"
+                    placeholder="vintage, promocao, outlet"
+                    {...register("tags")}
+                  />
                 </div>
               </div>
 
@@ -373,39 +459,87 @@ export default function CreateEventPage() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="street">Rua *</Label>
-                    <Input id="street" placeholder="Rua Augusta" {...register("street")} />
-                    {errors.street && <p className="text-sm text-destructive">{errors.street.message}</p>}
+                    <Input
+                      id="street"
+                      placeholder="Rua Augusta"
+                      {...register("street")}
+                    />
+                    {errors.street && (
+                      <p className="text-sm text-destructive">
+                        {errors.street.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="number">Numero *</Label>
-                    <Input id="number" placeholder="123" {...register("number")} />
-                    {errors.number && <p className="text-sm text-destructive">{errors.number.message}</p>}
+                    <Input
+                      id="number"
+                      placeholder="123"
+                      {...register("number")}
+                    />
+                    {errors.number && (
+                      <p className="text-sm text-destructive">
+                        {errors.number.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="neighborhood">Bairro *</Label>
-                    <Input id="neighborhood" placeholder="Centro" {...register("neighborhood")} />
-                    {errors.neighborhood && <p className="text-sm text-destructive">{errors.neighborhood.message}</p>}
+                    <Input
+                      id="neighborhood"
+                      placeholder="Centro"
+                      {...register("neighborhood")}
+                    />
+                    {errors.neighborhood && (
+                      <p className="text-sm text-destructive">
+                        {errors.neighborhood.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="city">Cidade *</Label>
-                    <Input id="city" placeholder="Sao Paulo" {...register("city")} />
-                    {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}
+                    <Input
+                      id="city"
+                      placeholder="Sao Paulo"
+                      {...register("city")}
+                    />
+                    {errors.city && (
+                      <p className="text-sm text-destructive">
+                        {errors.city.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="state">Estado *</Label>
                     <Input id="state" placeholder="SP" {...register("state")} />
-                    {errors.state && <p className="text-sm text-destructive">{errors.state.message}</p>}
+                    {errors.state && (
+                      <p className="text-sm text-destructive">
+                        {errors.state.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="zipCode">CEP *</Label>
-                    <Input id="zipCode" placeholder="00000-000" {...register("zipCode")} />
-                    {errors.zipCode && <p className="text-sm text-destructive">{errors.zipCode.message}</p>}
+                    <Input
+                      id="zipCode"
+                      placeholder="00000-000"
+                      {...register("zipCode")}
+                    />
+                    {errors.zipCode && (
+                      <p className="text-sm text-destructive">
+                        {errors.zipCode.message}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-3">
-                <Button type="button" variant="outline" onClick={() => navigate("/eventos")}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate("/eventos")}
+                >
                   Voltar
                 </Button>
                 <Button type="submit" disabled={loading}>
@@ -419,5 +553,4 @@ export default function CreateEventPage() {
     </div>
   );
 }
-
 

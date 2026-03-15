@@ -1,13 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { Business } from "@/types/business";
-import { appConfig } from "@/config/app.config";
+import { Baazar } from "@/lib/graphql/generated";
 
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
-import { Baazar } from "@/lib/graphql/generated";
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })
   ._getIconUrl;
@@ -17,15 +15,28 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
+const CTRL_GESTURE_MESSAGE = "Use Ctrl + arraste ou scroll para interagir com o mapa.";
+const TOUCH_GESTURE_MESSAGE = "Use dois dedos para mover o mapa.";
+const DF_BOUNDS: L.LatLngBoundsExpression = [
+  [-15.93, -48.15],
+  [-15.65, -47.75],
+];
+
 interface BusinessMapProps {
   businesses: Baazar[];
-  center?: { lat: number; lng: number }; // Nota: Ignoraremos isso se nao for uma loja
+  center?: { lat: number; lng: number };
   zoom?: number;
   onBusinessClick?: (business: Baazar) => void;
   selectedBusinessId?: string;
   className?: string;
   showUserLocation?: boolean;
   userLocation?: { lat: number; lng: number } | null;
+}
+
+function hasCoarsePointer() {
+  if (typeof window === "undefined") return false;
+
+  return window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
 }
 
 export function BusinessMap({
@@ -42,38 +53,195 @@ export function BusinessMap({
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const userMarkerRef = useRef<L.Marker | null>(null);
+  const gestureTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showGestureHintRef = useRef<(message: string) => void>(() => undefined);
+  const [gestureHint, setGestureHint] = useState<string | null>(null);
 
-  // Limites geograficos do DF para o fitBounds
-  const dfBounds: L.LatLngBoundsExpression = [
-    [-15.93, -48.15],
-    [-15.65, -47.75],
-  ];
+  showGestureHintRef.current = (message: string) => {
+    setGestureHint(message);
 
-  // 1. INICIALIZACAO (Roda apenas uma vez)
+    if (gestureTimeoutRef.current) {
+      clearTimeout(gestureTimeoutRef.current);
+    }
+
+    gestureTimeoutRef.current = setTimeout(() => {
+      setGestureHint(null);
+      gestureTimeoutRef.current = null;
+    }, 1800);
+  };
+
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    mapInstanceRef.current = L.map(mapRef.current);
+    const touchDevice = hasCoarsePointer();
+    const map = L.map(mapRef.current, {
+      scrollWheelZoom: false,
+      dragging: false,
+      touchZoom: false,
+      boxZoom: false,
+      doubleClickZoom: false,
+    });
 
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-      {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      },
-    ).addTo(mapInstanceRef.current);
+    mapInstanceRef.current = map;
 
-    mapInstanceRef.current.fitBounds(dfBounds);
+    if (touchDevice) {
+      map.getContainer().style.touchAction = "pan-x pan-y";
+    }
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    }).addTo(map);
+
+    map.fitBounds(DF_BOUNDS);
 
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
+      if (gestureTimeoutRef.current) {
+        clearTimeout(gestureTimeoutRef.current);
+        gestureTimeoutRef.current = null;
       }
+
+      map.remove();
+      mapInstanceRef.current = null;
     };
   }, []);
 
-  // 2. CONTROLE DE CAMERA (A Regra de Ouro)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    const container = map.getContainer();
+    const touchDevice = hasCoarsePointer();
+
+    const disableDesktopInteractions = () => {
+      if (touchDevice) return;
+      map.dragging.disable();
+      map.scrollWheelZoom.disable();
+      container.style.cursor = "grab";
+    };
+
+    const enableDesktopInteractions = () => {
+      if (touchDevice) return;
+      map.dragging.enable();
+      map.scrollWheelZoom.enable();
+      container.style.cursor = "grabbing";
+    };
+
+    const disableTouchInteractions = () => {
+      if (!touchDevice) return;
+      map.dragging.disable();
+      map.touchZoom.disable();
+      container.style.touchAction = "pan-x pan-y";
+    };
+
+    const enableTouchInteractions = () => {
+      if (!touchDevice) return;
+      map.dragging.enable();
+      map.touchZoom.enable();
+      container.style.touchAction = "none";
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey) {
+        disableDesktopInteractions();
+        showGestureHintRef.current(CTRL_GESTURE_MESSAGE);
+      }
+    };
+
+    const handleMouseDown = (event: MouseEvent) => {
+      if (touchDevice || event.ctrlKey) return;
+
+      disableDesktopInteractions();
+      showGestureHintRef.current(CTRL_GESTURE_MESSAGE);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (touchDevice) return;
+      if (event.key === "Control") {
+        enableDesktopInteractions();
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (touchDevice) return;
+      if (event.key === "Control") {
+        disableDesktopInteractions();
+      }
+    };
+
+    const handleWindowBlur = () => {
+      if (touchDevice) {
+        disableTouchInteractions();
+        return;
+      }
+
+      disableDesktopInteractions();
+    };
+
+    const updateTouchInteractions = (touchCount: number) => {
+      if (!touchDevice) return;
+
+      if (touchCount >= 2) {
+        enableTouchInteractions();
+        return;
+      }
+
+      disableTouchInteractions();
+    };
+
+    const handleTouchStart = (event: TouchEvent) => {
+      updateTouchInteractions(event.touches.length);
+
+      if (event.touches.length < 2) {
+        showGestureHintRef.current(TOUCH_GESTURE_MESSAGE);
+      }
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      updateTouchInteractions(event.touches.length);
+
+      if (event.touches.length < 2) {
+        disableTouchInteractions();
+      }
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      updateTouchInteractions(event.touches.length);
+    };
+
+    const handleTouchCancel = () => {
+      updateTouchInteractions(0);
+    };
+
+    disableDesktopInteractions();
+    disableTouchInteractions();
+
+    container.addEventListener("wheel", handleWheel, { passive: true });
+    container.addEventListener("mousedown", handleMouseDown);
+    container.addEventListener("touchstart", handleTouchStart, { passive: true });
+    container.addEventListener("touchmove", handleTouchMove, { passive: true });
+    container.addEventListener("touchend", handleTouchEnd, { passive: true });
+    container.addEventListener("touchcancel", handleTouchCancel, { passive: true });
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleWindowBlur);
+
+    return () => {
+      container.removeEventListener("wheel", handleWheel);
+      container.removeEventListener("mousedown", handleMouseDown);
+      container.removeEventListener("touchstart", handleTouchStart);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("touchend", handleTouchEnd);
+      container.removeEventListener("touchcancel", handleTouchCancel);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleWindowBlur);
+
+      disableDesktopInteractions();
+      disableTouchInteractions();
+    };
+  }, []);
+
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -84,7 +252,6 @@ export function BusinessMap({
     }
   }, [selectedBusinessId, center, zoom]);
 
-  // 3. MARCADORES DAS LOJAS
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -138,7 +305,6 @@ export function BusinessMap({
       });
   }, [businesses, selectedBusinessId, onBusinessClick]);
 
-  // 4. MARCADOR DO USUARIO (Bolinha Azul)
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -171,9 +337,15 @@ export function BusinessMap({
 
   return (
     <div
-      ref={mapRef}
-      className={`w-full h-full min-h-[280px] sm:min-h-[360px] lg:min-h-0 rounded-lg ${className}`}
+      className={`relative h-full min-h-[280px] w-full overflow-hidden rounded-lg sm:min-h-[360px] lg:min-h-0 ${className}`}
       style={{ zIndex: 0 }}
-    />
+    >
+      <div ref={mapRef} className="h-full w-full" />
+      {gestureHint ? (
+        <div className="pointer-events-none absolute left-1/2 top-4 z-[1000] -translate-x-1/2 rounded-full bg-background/95 px-4 py-2 text-sm font-medium text-foreground shadow-lg">
+          {gestureHint}
+        </div>
+      ) : null}
+    </div>
   );
 }

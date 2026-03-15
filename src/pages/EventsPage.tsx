@@ -142,8 +142,8 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
-      <section className="bg-gradient-to-b from-primary/10 via-accent to-background py-8 px-4">
+    <div>
+      <section className="bg-transparent py-8 px-4">
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
@@ -376,5 +376,6 @@ export default function EventsPage() {
     </div>
   );
 }
+
 
 
