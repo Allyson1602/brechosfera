@@ -127,9 +127,15 @@ export default {
   				'Liberation Mono',
   				'Courier New',
   				'monospace'
-  			]
+      ],
+      brand: [
+        'Great Vibes',
+        'cursive'
+      ]
   		}
   	}
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
+

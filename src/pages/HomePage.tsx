@@ -138,12 +138,12 @@ export default function HomePage() {
   const hasBusinesses = physicalBusinesses.length > 0;
 
   return (
-    <div className="min-h-[calc(100dvh-4rem)] overflow-y-auto lg:h-[calc(100dvh-4rem)] lg:min-h-0 lg:overflow-hidden lg:flex lg:flex-col">
-      <section className="bg-gradient-to-b from-primary/10 via-accent to-background pt-6 md:pt-8 pb-4 px-4 lg:pt-3 lg:pb-2 lg:shrink-0">
+    <div className="min-h-[calc(100dvh-4rem)] bg-transparent overflow-y-auto lg:h-[calc(100dvh-4rem)] lg:min-h-0 lg:overflow-hidden lg:flex lg:flex-col">
+      <section className="bg-transparent pt-6 md:pt-8 pb-4 px-4 lg:pt-3 lg:pb-2 lg:shrink-0">
         <div className="container mx-auto text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            Descubra <span className="text-primary">achados unicos</span> <br />
-            perto de voce
+            Descubra <span className="text-primary">achados únicos</span> perto
+            de você
           </h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
             {appConfig.description}
@@ -163,7 +163,9 @@ export default function HomePage() {
             ) : (
               <div className="flex items-center gap-2 text-primary">
                 <MapPin className="w-4 h-4" />
-                <span>Mostrando resultados proximos de: {userLocationLabel}</span>
+                <span>
+                  Mostrando resultados proximos de: {userLocationLabel}
+                </span>
               </div>
             )}
           </div>

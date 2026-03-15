@@ -181,7 +181,7 @@ export default function EventsPage() {
         </Card>
       </div>
 
-      <div className="sticky top-16 z-40 bg-card/95 backdrop-blur border-b border-border/50">
+      <div className="sticky top-16 z-40 border-b border-border/50">
         <div className="container mx-auto px-4">
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as EventStatus)}>
             <TabsList className="w-full justify-start h-auto p-0 bg-transparent gap-0">
@@ -376,4 +376,5 @@ export default function EventsPage() {
     </div>
   );
 }
+
 
