@@ -26,7 +26,9 @@ export default function OnlinePage() {
         return (
           b.name.toLowerCase().includes(query) ||
           (b.description || "").toLowerCase().includes(query) ||
-          b.itemsType.some((item) => getItemTypeSearchValue(item).includes(query))
+          b.itemsType.some((item) =>
+            getItemTypeSearchValue(item).includes(query),
+          )
         );
       }
 
@@ -40,8 +42,8 @@ export default function OnlinePage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
-      <section className="bg-gradient-to-b from-primary/10 via-accent to-background pt-8 pb-4 px-4">
+    <div>
+      <section className="bg-transparent pt-8 pb-4 px-4">
         <div className="container mx-auto text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
             Bazares e Brechos <span className="text-primary">Online</span>
@@ -128,3 +130,4 @@ export default function OnlinePage() {
     </div>
   );
 }
+

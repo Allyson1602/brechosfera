@@ -139,7 +139,7 @@ export default function RegisterPage() {
     setLogoImageFile(file);
   };
 
-const handleStoreImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleStoreImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
 
     if (files.some((file) => !isAllowedImageFile(file))) {
@@ -207,9 +207,12 @@ const handleStoreImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
       const logoImage = logoImageFile
         ? await uploadImageToBackend(logoImageFile)
         : registerConfig.defaultLogoImage;
-      const images = storeImageFiles.length > 0
-        ? await Promise.all(storeImageFiles.map((file) => uploadImageToBackend(file)))
-        : [];
+      const images =
+        storeImageFiles.length > 0
+          ? await Promise.all(
+              storeImageFiles.map((file) => uploadImageToBackend(file)),
+            )
+          : [];
 
       const createBaazarInput: CreateBaazarInput = {
         name: data.name.trim(),
@@ -249,7 +252,10 @@ const handleStoreImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
       setIsSubmitted(true);
     } catch (error) {
       console.error("Erro ao cadastrar bazar", error);
-      const message = error instanceof Error ? error.message : "Nao foi possivel enviar seu cadastro agora.";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel enviar seu cadastro agora.";
       toast({
         title: "Falha ao cadastrar",
         description: message,
@@ -280,8 +286,8 @@ const handleStoreImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
-      <section className="bg-gradient-to-b from-primary/10 via-accent to-background py-8 px-4">
+    <div>
+      <section className="bg-transparent py-8 px-4">
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
@@ -368,12 +374,16 @@ const handleStoreImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
                   onChange={handleLogoImageChange}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Se nao enviar, o sistema usa a imagem padrao da plataforma. Apenas JPG e PNG.
+                  Se nao enviar, o sistema usa a imagem padrao da plataforma.
+                  Apenas JPG e PNG.
                 </p>
               </div>
 
-<div className="space-y-2">
-                <Label htmlFor="storeImages" className="flex items-center gap-2">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="storeImages"
+                  className="flex items-center gap-2"
+                >
                   <Upload className="w-4 h-4" /> Fotos da loja
                 </Label>
                 <Input
@@ -384,7 +394,8 @@ const handleStoreImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
                   onChange={handleStoreImagesChange}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Adicione fotos do espaco, produtos ou vitrine. Apenas JPG e PNG.
+                  Adicione fotos do espaco, produtos ou vitrine. Apenas JPG e
+                  PNG.
                 </p>
                 {storeImageFiles.length > 0 && (
                   <p className="text-xs text-muted-foreground">
@@ -607,13 +618,4 @@ const handleStoreImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
 
