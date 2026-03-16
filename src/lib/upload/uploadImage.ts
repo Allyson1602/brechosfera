@@ -15,7 +15,8 @@ const MAX_IMAGE_DIMENSION = 2400;
 
 export const ACCEPTED_IMAGE_INPUT = ".jpg,.jpeg,.png,image/jpeg,image/png";
 export const INVALID_IMAGE_TYPE_MESSAGE = "Envie apenas arquivos JPG ou PNG.";
-export const INVALID_IMAGE_SIZE_MESSAGE = "A imagem e muito grande para ser processada. Tente um arquivo menor.";
+export const INVALID_IMAGE_SIZE_MESSAGE =
+  "A imagem é muito grande para ser processada. Tente um arquivo menor.";
 
 export function isAllowedImageFile(file: File): boolean {
   const fileName = file.name.toLowerCase();
@@ -43,7 +44,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error("Nao foi possivel processar a imagem selecionada."));
+      reject(new Error("Não foi possível processar a imagem selecionada."));
     };
 
     image.src = objectUrl;
@@ -63,7 +64,7 @@ function canvasToBlob(
           return;
         }
 
-        reject(new Error("Nao foi possivel preparar a imagem para envio."));
+        reject(new Error("Não foi possível preparar a imagem para envio."));
       },
       type,
       quality,
@@ -93,26 +94,82 @@ async function optimizeImageForUpload(file: File): Promise<File> {
   }
 
   const image = await loadImage(file);
-  const baseScale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
-  const scales = [baseScale, baseScale * 0.85, baseScale * 0.7, baseScale * 0.55].filter(
-    (scale, index, list) => scale > 0 && list.indexOf(scale) === index,
+  const baseScale = Math.min(
+    1,
+    MAX_IMAGE_DIMENSION / Math.max(image.width, image.height),
   );
+  const scales = [
+    baseScale,
+    baseScale * 0.85,
+    baseScale * 0.7,
+    baseScale * 0.55,
+  ].filter((scale, index, list) => scale > 0 && list.indexOf(scale) === index);
 
-  const attempts: Array<{ type: string; quality?: number; extension: string; fill: string | null }> =
+  const attempts: Array<{
+    type: string;
+    quality?: number;
+    extension: string;
+    fill: string | null;
+  }> =
     file.type === "image/png"
       ? [
           { type: "image/png", extension: ".png", fill: null },
-          { type: "image/jpeg", quality: 0.9, extension: ".jpg", fill: "#ffffff" },
-          { type: "image/jpeg", quality: 0.82, extension: ".jpg", fill: "#ffffff" },
-          { type: "image/jpeg", quality: 0.72, extension: ".jpg", fill: "#ffffff" },
-          { type: "image/jpeg", quality: 0.62, extension: ".jpg", fill: "#ffffff" },
+          {
+            type: "image/jpeg",
+            quality: 0.9,
+            extension: ".jpg",
+            fill: "#ffffff",
+          },
+          {
+            type: "image/jpeg",
+            quality: 0.82,
+            extension: ".jpg",
+            fill: "#ffffff",
+          },
+          {
+            type: "image/jpeg",
+            quality: 0.72,
+            extension: ".jpg",
+            fill: "#ffffff",
+          },
+          {
+            type: "image/jpeg",
+            quality: 0.62,
+            extension: ".jpg",
+            fill: "#ffffff",
+          },
         ]
       : [
-          { type: "image/jpeg", quality: 0.9, extension: ".jpg", fill: "#ffffff" },
-          { type: "image/jpeg", quality: 0.82, extension: ".jpg", fill: "#ffffff" },
-          { type: "image/jpeg", quality: 0.72, extension: ".jpg", fill: "#ffffff" },
-          { type: "image/jpeg", quality: 0.62, extension: ".jpg", fill: "#ffffff" },
-          { type: "image/jpeg", quality: 0.52, extension: ".jpg", fill: "#ffffff" },
+          {
+            type: "image/jpeg",
+            quality: 0.9,
+            extension: ".jpg",
+            fill: "#ffffff",
+          },
+          {
+            type: "image/jpeg",
+            quality: 0.82,
+            extension: ".jpg",
+            fill: "#ffffff",
+          },
+          {
+            type: "image/jpeg",
+            quality: 0.72,
+            extension: ".jpg",
+            fill: "#ffffff",
+          },
+          {
+            type: "image/jpeg",
+            quality: 0.62,
+            extension: ".jpg",
+            fill: "#ffffff",
+          },
+          {
+            type: "image/jpeg",
+            quality: 0.52,
+            extension: ".jpg",
+            fill: "#ffffff",
+          },
         ];
 
   let bestCandidate: File | null = null;
@@ -126,7 +183,7 @@ async function optimizeImageForUpload(file: File): Promise<File> {
 
     const context = canvas.getContext("2d");
     if (!context) {
-      throw new Error("Nao foi possivel preparar a imagem para envio.");
+      throw new Error("Não foi possível preparar a imagem para envio.");
     }
 
     for (const attempt of attempts) {
@@ -186,11 +243,15 @@ export async function uploadImageToBackend(file: File): Promise<string> {
       const data = await response.json();
       if (data && typeof data.message === "string") {
         message = data.message;
-      } else if (data && Array.isArray(data.message) && typeof data.message[0] === "string") {
+      } else if (
+        data &&
+        Array.isArray(data.message) &&
+        typeof data.message[0] === "string"
+      ) {
         message = data.message[0];
       }
     } catch {
-      // mantem mensagem padrao se a resposta nao vier em JSON
+      // mantém mensagem padrão se a resposta não vier em JSON
     }
 
     throw new Error(message);

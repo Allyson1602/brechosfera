@@ -79,7 +79,7 @@ export default function OnlinePage() {
               Erro ao carregar lojas online
             </h2>
             <p className="text-muted-foreground">
-              Nao foi possivel buscar os dados da API GraphQL.
+              Não foi possível buscar os dados.
             </p>
           </div>
         ) : loading ? (
@@ -93,7 +93,7 @@ export default function OnlinePage() {
               Nenhum resultado encontrado
             </h2>
             <p className="text-muted-foreground">
-              Tente ajustar sua busca para encontrar mais opcoes.
+              Tente ajustar sua busca para encontrar mais opções.
             </p>
           </div>
         ) : (
@@ -130,4 +130,3 @@ export default function OnlinePage() {
     </div>
   );
 }
-

@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { eventsConfig } from "@/config/events.config";
 import { useToast } from "@/hooks/use-toast";
+import { DEFAULT_BAAZAR_IMAGE_URL } from "@/lib/graphql/client";
 import { resolveImageSrc } from "@/lib/images/resolveImageSrc";
 import {
   ACCEPTED_IMAGE_INPUT,
@@ -50,17 +51,17 @@ const FIND_BAAZARS_BY_NAME = gql`
 
 const createEventSchema = z
   .object({
-    title: z.string().min(3, "Titulo deve ter pelo menos 3 caracteres"),
+    title: z.string().min(3, "Título deve ter pelo menos 3 caracteres"),
     description: z
       .string()
-      .min(20, "Descricao deve ter pelo menos 20 caracteres"),
+      .min(20, "Descrição deve ter pelo menos 20 caracteres"),
     startDate: z.string().min(1, "Informe a data de inicio"),
-    startTime: z.string().min(1, "Informe o horario de inicio"),
+    startTime: z.string().min(1, "Informe o horário de início"),
     endDate: z.string().min(1, "Informe a data de fim"),
-    endTime: z.string().min(1, "Informe o horario de fim"),
+    endTime: z.string().min(1, "Informe o horário de fim"),
     tags: z.string().optional(),
     street: z.string().min(2, "Informe a rua"),
-    number: z.string().min(1, "Informe o numero"),
+    number: z.string().min(1, "Informe o número"),
     neighborhood: z.string().min(2, "Informe o bairro"),
     city: z.string().min(2, "Informe a cidade"),
     state: z.string().min(2, "Informe o estado"),
@@ -75,7 +76,7 @@ const createEventSchema = z
     },
     {
       path: ["endTime"],
-      message: "Data e horario de fim devem ser maiores ou iguais ao inicio",
+      message: "Data e horário de fim devem ser maiores ou iguais ao início",
     },
   );
 
@@ -147,7 +148,7 @@ export default function CreateEventPage() {
 
     if (file && !isAllowedImageFile(file)) {
       toast({
-        title: "Formato de imagem invalido",
+        title: "Formato de imagem inválido",
         description: INVALID_IMAGE_TYPE_MESSAGE,
         variant: "destructive",
       });
@@ -220,7 +221,7 @@ export default function CreateEventPage() {
       const message =
         error instanceof Error
           ? error.message
-          : "Nao foi possivel salvar o evento agora.";
+          : "Não foi possível salvar o evento agora.";
       toast({
         title: "Erro ao criar evento",
         description: message,
@@ -252,7 +253,7 @@ export default function CreateEventPage() {
           <CardHeader>
             <CardTitle>Dados do evento</CardTitle>
             <CardDescription>
-              Vincular com um bazar e opcional. O evento continua valido sem
+              Vincular com um bazar é opcional. O evento continua válido sem
               vinculo.
             </CardDescription>
           </CardHeader>
@@ -260,7 +261,7 @@ export default function CreateEventPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="title">Titulo *</Label>
+                  <Label htmlFor="title">Título *</Label>
                   <Input
                     id="title"
                     placeholder="Ex: Feira vintage de outono"
@@ -274,7 +275,7 @@ export default function CreateEventPage() {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="description">Descricao *</Label>
+                  <Label htmlFor="description">Descrição *</Label>
                   <Textarea
                     id="description"
                     rows={4}
@@ -302,7 +303,7 @@ export default function CreateEventPage() {
                     onChange={handleCoverImageChange}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Se nao enviar, o sistema usa a imagem padrao da plataforma.
+                    Se não enviar, o sistema usa a imagem padrão da plataforma.
                     Apenas JPG e PNG.
                   </p>
                 </div>
@@ -317,7 +318,7 @@ export default function CreateEventPage() {
                         <img
                           src={resolveImageSrc(
                             selectedBaazar.logoImage,
-                            "http://localhost:3000/uploads/defaults/bazar-1.svg",
+                            DEFAULT_BAAZAR_IMAGE_URL,
                           )}
                           alt={selectedBaazar.name}
                           className="w-8 h-8 rounded-full object-cover"
@@ -371,7 +372,7 @@ export default function CreateEventPage() {
                                 <img
                                   src={resolveImageSrc(
                                     baazar.logoImage,
-                                    "http://localhost:3000/uploads/defaults/bazar-1.svg",
+                                    DEFAULT_BAAZAR_IMAGE_URL,
                                   )}
                                   alt={baazar.name}
                                   className="w-7 h-7 rounded-full object-cover"
@@ -404,7 +405,7 @@ export default function CreateEventPage() {
                     htmlFor="startTime"
                     className="flex items-center gap-2"
                   >
-                    <Clock3 className="w-4 h-4" /> Horario de inicio *
+                    <Clock3 className="w-4 h-4" /> Horário de início *
                   </Label>
                   <Input
                     id="startTime"
@@ -430,7 +431,7 @@ export default function CreateEventPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="endTime" className="flex items-center gap-2">
-                    <Clock3 className="w-4 h-4" /> Horario de fim *
+                    <Clock3 className="w-4 h-4" /> Horário de fim *
                   </Label>
                   <Input id="endTime" type="time" {...register("endTime")} />
                   {errors.endTime && (
@@ -441,10 +442,10 @@ export default function CreateEventPage() {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="tags">Tags (separadas por virgula)</Label>
+                  <Label htmlFor="tags">Tags (separadas por vírgula)</Label>
                   <Input
                     id="tags"
-                    placeholder="vintage, promocao, outlet"
+                    placeholder="vintage, promoção, outlet"
                     {...register("tags")}
                   />
                 </div>
@@ -471,7 +472,7 @@ export default function CreateEventPage() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="number">Numero *</Label>
+                    <Label htmlFor="number">Número *</Label>
                     <Input
                       id="number"
                       placeholder="123"
@@ -500,7 +501,7 @@ export default function CreateEventPage() {
                     <Label htmlFor="city">Cidade *</Label>
                     <Input
                       id="city"
-                      placeholder="Sao Paulo"
+                      placeholder="São Paulo"
                       {...register("city")}
                     />
                     {errors.city && (
@@ -553,4 +554,3 @@ export default function CreateEventPage() {
     </div>
   );
 }
-

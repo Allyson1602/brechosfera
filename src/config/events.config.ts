@@ -1,5 +1,7 @@
-﻿export const eventsConfig = {
+import { DEFAULT_EVENT_IMAGE_URL } from "@/lib/graphql/client";
+
+export const eventsConfig = {
   storageKey: "brechosfera-events",
-  defaultCoverImage: "http://localhost:3000/uploads/defaults/evento-1.svg",
+  defaultCoverImage: DEFAULT_EVENT_IMAGE_URL,
   autoPublishNewEvents: false,
 };

@@ -1,4 +1,4 @@
-import { BusinessCard } from "@/components/business/BusinessCard";
+﻿import { BusinessCard } from "@/components/business/BusinessCard";
 import { BusinessDetail } from "@/components/business/BusinessDetail";
 import { BusinessMap } from "@/components/map/BusinessMap";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -158,13 +158,13 @@ export default function HomePage() {
             ) : geoError ? (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <MapPin className="w-4 h-4" />
-                <span>Usando localizacao padrao: {userLocationLabel}</span>
+                <span>Usando localização padrão: {userLocationLabel}</span>
               </div>
             ) : (
               <div className="flex items-center gap-2 text-primary">
                 <MapPin className="w-4 h-4" />
                 <span>
-                  Mostrando resultados proximos de: {userLocationLabel}
+                  Mostrando resultados próximos de: {userLocationLabel}
                 </span>
               </div>
             )}
@@ -197,7 +197,7 @@ export default function HomePage() {
           <div className="grid gap-4 lg:gap-5 h-full lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
             <div className="h-[68dvh] min-h-[320px] sm:h-[70dvh] lg:h-full lg:min-h-0 rounded-lg overflow-hidden shadow-lg">
               {loading ? (
-                <LoadingPanel message="Carregando os pontos no mapa para voce." />
+                <LoadingPanel message="Carregando os pontos no mapa para você." />
               ) : (
                 <BusinessMap
                   businesses={physicalBusinesses}
@@ -227,7 +227,7 @@ export default function HomePage() {
                 <LoadingCards />
               ) : error ? (
                 <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-muted-foreground">
-                  Nao foi possivel carregar as lojas agora.
+                  Não foi possível carregar as lojas agora.
                 </div>
               ) : hasBusinesses ? (
                 <div className="space-y-3">
@@ -260,7 +260,7 @@ export default function HomePage() {
               <LoadingCards />
             ) : error ? (
               <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-muted-foreground">
-                Nao foi possivel carregar as lojas agora.
+                Não foi possível carregar as lojas agora.
               </div>
             ) : hasBusinesses ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">

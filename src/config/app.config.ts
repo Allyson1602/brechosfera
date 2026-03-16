@@ -1,4 +1,4 @@
-import type { BusinessCategory } from "@/types/business";
+﻿import type { BusinessCategory } from "@/types/business";
 
 // Configuração central do app - fácil de customizar para outros projetos
 export const appConfig = {

@@ -65,7 +65,7 @@ const registerSchema = z.object({
   isOnline: z.boolean(),
   phone: z.string().optional(),
   whatsapp: z.string().optional(),
-  email: z.string().email("Email invalido").optional().or(z.literal("")),
+  email: z.string().email("E-mail inválido").optional().or(z.literal("")),
   instagram: z.string().optional(),
   facebook: z.string().optional(),
   website: z.string().url("URL invalida").optional().or(z.literal("")),
@@ -127,7 +127,7 @@ export default function RegisterPage() {
 
     if (file && !isAllowedImageFile(file)) {
       toast({
-        title: "Formato de imagem invalido",
+        title: "Formato de imagem inválido",
         description: INVALID_IMAGE_TYPE_MESSAGE,
         variant: "destructive",
       });
@@ -144,7 +144,7 @@ export default function RegisterPage() {
 
     if (files.some((file) => !isAllowedImageFile(file))) {
       toast({
-        title: "Formato de imagem invalido",
+        title: "Formato de imagem inválido",
         description: INVALID_IMAGE_TYPE_MESSAGE,
         variant: "destructive",
       });
@@ -201,7 +201,7 @@ export default function RegisterPage() {
 
     const address = data.isOnline
       ? "Online"
-      : addressParts.join(", ") || "Nao informado";
+      : addressParts.join(", ") || "Não informado";
 
     try {
       const logoImage = logoImageFile
@@ -246,7 +246,7 @@ export default function RegisterPage() {
 
       toast({
         title: "Cadastro recebido!",
-        description: "Seu bazar foi enviado para analise com sucesso.",
+        description: "Seu bazar foi enviado para análise com sucesso.",
       });
 
       setIsSubmitted(true);
@@ -255,7 +255,7 @@ export default function RegisterPage() {
       const message =
         error instanceof Error
           ? error.message
-          : "Nao foi possivel enviar seu cadastro agora.";
+          : "Não foi possível enviar seu cadastro agora.";
       toast({
         title: "Falha ao cadastrar",
         description: message,
@@ -274,7 +274,7 @@ export default function RegisterPage() {
             </div>
             <h2 className="text-2xl font-bold mb-2">Cadastro enviado!</h2>
             <p className="text-muted-foreground mb-6">
-              Recebemos seu cadastro e nossa equipe vai analisar as informacoes.
+              Recebemos seu cadastro e nossa equipe vai analisar as informações.
             </p>
             <Button onClick={() => setIsSubmitted(false)}>
               Cadastrar outra loja
@@ -298,7 +298,7 @@ export default function RegisterPage() {
             Cadastre sua <span className="text-primary">loja</span>
           </h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Faca parte da comunidade e alcance mais pessoas em busca de achados.
+            Faça parte da comunidade e alcance mais pessoas em busca de achados.
           </p>
         </div>
       </section>
@@ -309,7 +309,7 @@ export default function RegisterPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Store className="w-5 h-5 text-primary" />
-                Informacoes basicas
+                Informações básicas
               </CardTitle>
               <CardDescription>
                 Conte-nos sobre seu bazar ou brecho
@@ -374,7 +374,7 @@ export default function RegisterPage() {
                   onChange={handleLogoImageChange}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Se nao enviar, o sistema usa a imagem padrao da plataforma.
+                  Se não enviar, o sistema usa a imagem padrão da plataforma.
                   Apenas JPG e PNG.
                 </p>
               </div>
@@ -394,7 +394,7 @@ export default function RegisterPage() {
                   onChange={handleStoreImagesChange}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Adicione fotos do espaco, produtos ou vitrine. Apenas JPG e
+                  Adicione fotos do espaço, produtos ou vitrine. Apenas JPG e
                   PNG.
                 </p>
                 {storeImageFiles.length > 0 && (
@@ -429,7 +429,7 @@ export default function RegisterPage() {
             <CardHeader>
               <CardTitle>Tipos de itens</CardTitle>
               <CardDescription>
-                Selecione os produtos que voce vende
+                Selecione os produtos que você vende
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -618,4 +618,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
