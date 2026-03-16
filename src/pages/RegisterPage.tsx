@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+﻿import { useState, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -60,15 +60,15 @@ const registerSchema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   description: z
     .string()
-    .min(20, "Descricao deve ter pelo menos 20 caracteres"),
+    .min(20, "Descrição deve ter pelo menos 20 caracteres"),
   category: z.enum(["bazar", "brecho"]),
   isOnline: z.boolean(),
   phone: z.string().optional(),
   whatsapp: z.string().optional(),
-  email: z.string().email("Email invalido").optional().or(z.literal("")),
+  email: z.string().email("E-mail inválido").optional().or(z.literal("")),
   instagram: z.string().optional(),
   facebook: z.string().optional(),
-  website: z.string().url("URL invalida").optional().or(z.literal("")),
+  website: z.string().url("URL inválida").optional().or(z.literal("")),
   street: z.string().optional(),
   number: z.string().optional(),
   neighborhood: z.string().optional(),
@@ -127,7 +127,7 @@ export default function RegisterPage() {
 
     if (file && !isAllowedImageFile(file)) {
       toast({
-        title: "Formato de imagem invalido",
+        title: "Formato de imagem inválido",
         description: INVALID_IMAGE_TYPE_MESSAGE,
         variant: "destructive",
       });
@@ -144,7 +144,7 @@ export default function RegisterPage() {
 
     if (files.some((file) => !isAllowedImageFile(file))) {
       toast({
-        title: "Formato de imagem invalido",
+        title: "Formato de imagem inválido",
         description: INVALID_IMAGE_TYPE_MESSAGE,
         variant: "destructive",
       });
@@ -201,7 +201,7 @@ export default function RegisterPage() {
 
     const address = data.isOnline
       ? "Online"
-      : addressParts.join(", ") || "Nao informado";
+      : addressParts.join(", ") || "Não informado";
 
     try {
       const logoImage = logoImageFile
@@ -246,7 +246,7 @@ export default function RegisterPage() {
 
       toast({
         title: "Cadastro recebido!",
-        description: "Seu bazar foi enviado para analise com sucesso.",
+        description: "Seu bazar foi enviado para análise com sucesso.",
       });
 
       setIsSubmitted(true);
@@ -255,7 +255,7 @@ export default function RegisterPage() {
       const message =
         error instanceof Error
           ? error.message
-          : "Nao foi possivel enviar seu cadastro agora.";
+          : "Não foi possível enviar seu cadastro agora.";
       toast({
         title: "Falha ao cadastrar",
         description: message,
@@ -274,7 +274,7 @@ export default function RegisterPage() {
             </div>
             <h2 className="text-2xl font-bold mb-2">Cadastro enviado!</h2>
             <p className="text-muted-foreground mb-6">
-              Recebemos seu cadastro e nossa equipe vai analisar as informacoes.
+              Recebemos seu cadastro e nossa equipe vai analisar as informações.
             </p>
             <Button onClick={() => setIsSubmitted(false)}>
               Cadastrar outra loja
@@ -298,7 +298,7 @@ export default function RegisterPage() {
             Cadastre sua <span className="text-primary">loja</span>
           </h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Faca parte da comunidade e alcance mais pessoas em busca de achados.
+            Faça parte da comunidade e alcance mais pessoas em busca de achados.
           </p>
         </div>
       </section>
@@ -309,10 +309,10 @@ export default function RegisterPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Store className="w-5 h-5 text-primary" />
-                Informacoes basicas
+                Informações básicas
               </CardTitle>
               <CardDescription>
-                Conte-nos sobre seu bazar ou brecho
+                Conte-nos sobre seu bazar ou brechó
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -320,7 +320,7 @@ export default function RegisterPage() {
                 <Label htmlFor="name">Nome da loja *</Label>
                 <Input
                   id="name"
-                  placeholder="Ex: Brecho das Amigas"
+                  placeholder="Ex: Brechó das Amigas"
                   {...register("name")}
                 />
                 {errors.name && (
@@ -342,14 +342,14 @@ export default function RegisterPage() {
                     <SelectValue placeholder="Selecione a categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="brecho">Brecho</SelectItem>
+                    <SelectItem value="brecho">Brechó</SelectItem>
                     <SelectItem value="bazar">Bazar</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Descricao *</Label>
+                <Label htmlFor="description">Descrição *</Label>
                 <Textarea
                   id="description"
                   placeholder="Descreva sua loja e o que vende"
@@ -374,7 +374,7 @@ export default function RegisterPage() {
                   onChange={handleLogoImageChange}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Se nao enviar, o sistema usa a imagem padrao da plataforma.
+                  Se não enviar, o sistema usa a imagem padrão da plataforma.
                   Apenas JPG e PNG.
                 </p>
               </div>
@@ -394,7 +394,7 @@ export default function RegisterPage() {
                   onChange={handleStoreImagesChange}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Adicione fotos do espaco, produtos ou vitrine. Apenas JPG e
+                  Adicione fotos do espaço, produtos ou vitrine. Apenas JPG e
                   PNG.
                 </p>
                 {storeImageFiles.length > 0 && (
@@ -410,7 +410,7 @@ export default function RegisterPage() {
                   <div>
                     <p className="font-medium">Vendas online</p>
                     <p className="text-sm text-muted-foreground">
-                      Marque se voce vende pela internet
+                      Marque se você vende pela internet
                     </p>
                   </div>
                 </div>
@@ -429,7 +429,7 @@ export default function RegisterPage() {
             <CardHeader>
               <CardTitle>Tipos de itens</CardTitle>
               <CardDescription>
-                Selecione os produtos que voce vende
+                Selecione os produtos que você vende
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -533,7 +533,7 @@ export default function RegisterPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-primary" />
-                  Endereco
+                  Endereço
                 </CardTitle>
                 <CardDescription>Onde fica sua loja?</CardDescription>
               </CardHeader>
@@ -548,7 +548,7 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="number">Numero</Label>
+                    <Label htmlFor="number">Número</Label>
                     <Input
                       id="number"
                       placeholder="1234"
@@ -570,7 +570,7 @@ export default function RegisterPage() {
                     <Label htmlFor="city">Cidade</Label>
                     <Input
                       id="city"
-                      placeholder="Sao Paulo"
+                      placeholder="São Paulo"
                       {...register("city")}
                     />
                   </div>
@@ -618,4 +618,5 @@ export default function RegisterPage() {
     </div>
   );
 }
+
 

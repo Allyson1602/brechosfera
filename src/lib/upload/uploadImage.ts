@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/lib/graphql/client";
+﻿import { API_BASE_URL } from "@/lib/graphql/client";
 
 interface UploadImageResponse {
   url: string;
@@ -15,7 +15,7 @@ const MAX_IMAGE_DIMENSION = 2400;
 
 export const ACCEPTED_IMAGE_INPUT = ".jpg,.jpeg,.png,image/jpeg,image/png";
 export const INVALID_IMAGE_TYPE_MESSAGE = "Envie apenas arquivos JPG ou PNG.";
-export const INVALID_IMAGE_SIZE_MESSAGE = "A imagem e muito grande para ser processada. Tente um arquivo menor.";
+export const INVALID_IMAGE_SIZE_MESSAGE = "A imagem é muito grande para ser processada. Tente um arquivo menor.";
 
 export function isAllowedImageFile(file: File): boolean {
   const fileName = file.name.toLowerCase();
@@ -43,7 +43,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error("Nao foi possivel processar a imagem selecionada."));
+      reject(new Error("Não foi possível processar a imagem selecionada."));
     };
 
     image.src = objectUrl;
@@ -63,7 +63,7 @@ function canvasToBlob(
           return;
         }
 
-        reject(new Error("Nao foi possivel preparar a imagem para envio."));
+        reject(new Error("Não foi possível preparar a imagem para envio."));
       },
       type,
       quality,
@@ -126,7 +126,7 @@ async function optimizeImageForUpload(file: File): Promise<File> {
 
     const context = canvas.getContext("2d");
     if (!context) {
-      throw new Error("Nao foi possivel preparar a imagem para envio.");
+      throw new Error("Não foi possível preparar a imagem para envio.");
     }
 
     for (const attempt of attempts) {
@@ -190,7 +190,7 @@ export async function uploadImageToBackend(file: File): Promise<string> {
         message = data.message[0];
       }
     } catch {
-      // mantem mensagem padrao se a resposta nao vier em JSON
+      // mantém mensagem padrão se a resposta não vier em JSON
     }
 
     throw new Error(message);
@@ -199,3 +199,4 @@ export async function uploadImageToBackend(file: File): Promise<string> {
   const data = (await response.json()) as UploadImageResponse;
   return data.url;
 }
+

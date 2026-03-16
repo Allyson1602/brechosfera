@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useMutation } from "@apollo/client/react";
 import { Star, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,18 +28,18 @@ export function RatingInput({ businessId, businessName }: RatingInputProps) {
 
   const handleSubmitRating = async () => {
     if (selectedRating === 0) {
-      toast.error("Selecione uma avaliacao");
+      toast.error("Selecione uma avaliação");
       return;
     }
 
     if (!canRate) {
-      toast.error("Voce ja avaliou uma loja recentemente. Tente novamente mais tarde.");
+      toast.error("Você já avaliou uma loja recentemente. Tente novamente mais tarde.");
       return;
     }
 
     const numericBusinessId = Number(businessId);
     if (!Number.isFinite(numericBusinessId)) {
-      toast.error("Nao foi possivel identificar a loja para registrar a avaliacao.");
+      toast.error("Não foi possível identificar a loja para registrar a avaliação.");
       return;
     }
 
@@ -55,12 +55,12 @@ export function RatingInput({ businessId, businessName }: RatingInputProps) {
 
       registerRating(selectedRating);
       toast.success(
-        `Voce avaliou ${businessName} com ${selectedRating} estrela${
+        `Você avaliou ${businessName} com ${selectedRating} estrela${
           selectedRating > 1 ? "s" : ""
         }!`,
       );
     } catch {
-      toast.error("Nao foi possivel salvar sua avaliacao agora.");
+      toast.error("Não foi possível salvar sua avaliação agora.");
     }
   };
 
@@ -72,7 +72,7 @@ export function RatingInput({ businessId, businessName }: RatingInputProps) {
     return (
       <div className="bg-muted/50 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-medium">Sua avaliacao:</span>
+          <span className="text-sm font-medium">Sua avaliação:</span>
           <div className="flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
@@ -89,7 +89,7 @@ export function RatingInput({ businessId, businessName }: RatingInputProps) {
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Clock className="w-3 h-3" />
           <span>
-            Podera avaliar qualquer loja novamente em {formatTimeRemaining(timeUntilCanRate)}
+            Poderá avaliar qualquer loja novamente em {formatTimeRemaining(timeUntilCanRate)}
           </span>
         </div>
       </div>
@@ -99,11 +99,11 @@ export function RatingInput({ businessId, businessName }: RatingInputProps) {
   if (isBlockedByAnotherBusiness) {
     return (
       <div className="bg-muted/50 rounded-lg p-4">
-        <p className="text-sm font-medium mb-2">Avaliacao indisponivel no momento</p>
+        <p className="text-sm font-medium mb-2">Avaliação indisponível no momento</p>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Clock className="w-3 h-3" />
           <span>
-            Voce podera avaliar qualquer loja novamente em {formatTimeRemaining(timeUntilCanRate)}
+            Você poderá avaliar qualquer loja novamente em {formatTimeRemaining(timeUntilCanRate)}
           </span>
         </div>
       </div>
@@ -146,3 +146,4 @@ export function RatingInput({ businessId, businessName }: RatingInputProps) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import {
+﻿import {
   MapPin,
   Star,
   Globe,
@@ -130,7 +130,7 @@ export function BusinessDetail({
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
-                Imagem indisponivel
+                Imagem indisponível
               </div>
             )}
 
@@ -190,14 +190,14 @@ export function BusinessDetail({
               </div>
               <SheetTitle className="text-2xl">{business.name}</SheetTitle>
               <SheetDescription className="sr-only">
-                Detalhes da loja {business.name}, incluindo imagens, descricao, contatos e avaliacao.
+                Detalhes da loja {business.name}, incluindo imagens, descrição, contatos e avaliação.
               </SheetDescription>
               <div className="flex items-center gap-2 text-sm">
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-semibold">{rating.rating}</span>
                 </div>
-                <span className="text-muted-foreground">({rating.count} avaliacoes)</span>
+                <span className="text-muted-foreground">({rating.count} avaliações)</span>
               </div>
             </SheetHeader>
 
@@ -211,7 +211,7 @@ export function BusinessDetail({
             )}
 
             <p className="mb-4 text-muted-foreground">
-              {business.description || "Sem descricao disponivel."}
+              {business.description || "Sem descrição disponível."}
             </p>
 
             {itemTypes.length > 0 && (
@@ -233,7 +233,7 @@ export function BusinessDetail({
               <div className="mb-4">
                 <h4 className="mb-2 flex items-center gap-2 font-semibold">
                   <Clock className="h-4 w-4" />
-                  Horario de Funcionamento
+                  
                 </h4>
                 <div className="grid gap-2 text-sm">
                   {openingHours.map((hours) => (
@@ -282,5 +282,8 @@ export function BusinessDetail({
     </Sheet>
   );
 }
+
+
+
 
 

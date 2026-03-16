@@ -1,11 +1,23 @@
-import { useMemo, useState } from "react";
-import { Calendar, Clock, MapPin, ChevronRight, PlusCircle } from "lucide-react";
+﻿import { useMemo, useState } from "react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  ChevronRight,
+  PlusCircle,
+} from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Sheet,
   SheetContent,
@@ -96,34 +108,42 @@ function resolveEventStatus(startDate: string, endDate: string): EventStatus {
 
 export default function EventsPage() {
   const navigate = useNavigate();
-  const { loading: eventsLoading, error: eventsQueryError, data: eventsData } =
-    useQuery<EventsQueryData>(GET_EVENTS);
+  const {
+    loading: eventsLoading,
+    error: eventsQueryError,
+    data: eventsData,
+  } = useQuery<EventsQueryData>(GET_EVENTS);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<EventStatus>("upcoming");
 
   const allEvents = useMemo(() => {
-    const backendEvents: Event[] = (eventsData?.findAllEvents || []).map((event) => ({
-      id: event.id,
-      title: event.title,
-      description: event.description,
-      businessId: event.businessId || "",
-      business: event.business
-        ? {
-            id: event.business.id,
-            name: event.business.name,
-            coverImage: resolveImageSrc(event.business.logoImage || ""),
-          }
-        : undefined,
-      coverImage: resolveImageSrc(event.coverImage, eventsConfig.defaultCoverImage),
-      startDate: event.startDate,
-      endDate: event.endDate,
-      address: event.address || undefined,
-      status: resolveEventStatus(event.startDate, event.endDate),
-      isPublished: event.isPublished ?? true,
-      tags: event.tags || [],
-      createdAt: event.createdAt,
-    }));
+    const backendEvents: Event[] = (eventsData?.findAllEvents || []).map(
+      (event) => ({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        businessId: event.businessId || "",
+        business: event.business
+          ? {
+              id: event.business.id,
+              name: event.business.name,
+              coverImage: resolveImageSrc(event.business.logoImage || ""),
+            }
+          : undefined,
+        coverImage: resolveImageSrc(
+          event.coverImage,
+          eventsConfig.defaultCoverImage,
+        ),
+        startDate: event.startDate,
+        endDate: event.endDate,
+        address: event.address || undefined,
+        status: resolveEventStatus(event.startDate, event.endDate),
+        isPublished: event.isPublished ?? true,
+        tags: event.tags || [],
+        createdAt: event.createdAt,
+      }),
+    );
 
     return backendEvents.map((event) => ({
       ...event,
@@ -132,7 +152,10 @@ export default function EventsPage() {
   }, [eventsData]);
 
   const filteredEvents = useMemo(
-    () => allEvents.filter((event) => event.isPublished && event.status === activeTab),
+    () =>
+      allEvents.filter(
+        (event) => event.isPublished && event.status === activeTab,
+      ),
     [allEvents, activeTab],
   );
 
@@ -154,7 +177,7 @@ export default function EventsPage() {
             <span className="text-primary">Eventos</span> presenciais
           </h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Descubra os eventos ja criados e veja os detalhes de cada encontro.
+            Descubra os eventos já criados e veja os detalhes de cada encontro.
           </p>
         </div>
       </section>
@@ -168,14 +191,19 @@ export default function EventsPage() {
                 Criar novo evento
               </CardTitle>
               <CardDescription>
-                Os eventos sao exclusivamente presenciais.
+                Os eventos são exclusivamente presenciais.
               </CardDescription>
             </div>
-            <Button onClick={() => navigate("/eventos/criar")}>Criar evento</Button>
+            <Button onClick={() => navigate("/eventos/criar")}>
+              Criar evento
+            </Button>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Total de eventos presenciais publicados: <strong>{allEvents.filter((event) => event.isPublished).length}</strong>
+              Total de eventos presenciais publicados:{" "}
+              <strong>
+                {allEvents.filter((event) => event.isPublished).length}
+              </strong>
             </p>
           </CardContent>
         </Card>
@@ -183,7 +211,10 @@ export default function EventsPage() {
 
       <div className="sticky top-16 z-40 border-b border-border/50">
         <div className="container mx-auto px-4">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as EventStatus)}>
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as EventStatus)}
+          >
             <TabsList className="w-full justify-start h-auto p-0 bg-transparent gap-0">
               <TabsTrigger
                 value="ongoing"
@@ -214,38 +245,50 @@ export default function EventsPage() {
       <div className="container mx-auto px-4 py-6">
         {eventsQueryError && (
           <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-            Nao foi possivel carregar eventos do backend GraphQL.
+            Não foi possível carregar eventos.
           </div>
         )}
         {eventsLoading ? (
           <div className="text-center py-16">
             <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4 animate-pulse" />
-            <h2 className="text-xl font-semibold mb-2">Carregando eventos...</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              Carregando eventos...
+            </h2>
           </div>
         ) : filteredEvents.length === 0 ? (
           <div className="text-center py-16">
             <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">
-              Nenhum evento {activeTab === "ongoing" ? "acontecendo" : activeTab === "upcoming" ? "programado" : "encerrado"}
+              Nenhum evento{" "}
+              {activeTab === "ongoing"
+                ? "acontecendo"
+                : activeTab === "upcoming"
+                  ? "programado"
+                  : "encerrado"}
             </h2>
             <p className="text-muted-foreground">
               {activeTab === "upcoming"
-                ? "Novos eventos publicados aparecerao em breve."
+                ? "Novos eventos publicados aparecerão em breve."
                 : activeTab === "ongoing"
-                  ? "Nao ha eventos publicados acontecendo no momento."
-                  : "Eventos encerrados e publicados aparecerao aqui."}
+                  ? "Não há eventos publicados acontecendo no momento."
+                  : "Eventos encerrados e publicados aparecerão aqui."}
             </p>
           </div>
         ) : (
           <>
             <div className="mb-6">
               <h2 className="font-semibold text-lg">
-                {filteredEvents.length} evento{filteredEvents.length !== 1 ? "s" : ""}
+                {filteredEvents.length} evento
+                {filteredEvents.length !== 1 ? "s" : ""}
               </h2>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredEvents.map((event) => (
-                <EventCard key={event.id} event={event} onClick={() => handleEventClick(event)} />
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  onClick={() => handleEventClick(event)}
+                />
               ))}
             </div>
           </>
@@ -256,7 +299,14 @@ export default function EventsPage() {
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto p-0">
           {selectedEvent && (
             <div>
-              <img src={resolveImageSrc(selectedEvent.coverImage, eventsConfig.defaultCoverImage)} alt={selectedEvent.title} className="w-full h-56 object-cover" />
+              <img
+                src={resolveImageSrc(
+                  selectedEvent.coverImage,
+                  eventsConfig.defaultCoverImage,
+                )}
+                alt={selectedEvent.title}
+                className="w-full h-56 object-cover"
+              />
               <div className="p-6">
                 <SheetHeader className="text-left mb-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -276,9 +326,12 @@ export default function EventsPage() {
                           : "Encerrado"}
                     </Badge>
                   </div>
-                  <SheetTitle className="text-2xl">{selectedEvent.title}</SheetTitle>
+                  <SheetTitle className="text-2xl">
+                    {selectedEvent.title}
+                  </SheetTitle>
                   <SheetDescription className="sr-only">
-                    Detalhes do evento {selectedEvent.title}, incluindo data, horario, local e organizador.
+                    Detalhes do evento {selectedEvent.title}, incluindo data,
+                    horário, local e organizador.
                   </SheetDescription>
                 </SheetHeader>
 
@@ -289,14 +342,29 @@ export default function EventsPage() {
                     </div>
                     <div>
                       <p className="font-medium">
-                        {format(new Date(selectedEvent.startDate), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                      </p>
-                      {format(new Date(selectedEvent.startDate), "yyyy-MM-dd") !==
-                        format(new Date(selectedEvent.endDate), "yyyy-MM-dd") && (
-                          <p className="text-sm text-muted-foreground">
-                            ate {format(new Date(selectedEvent.endDate), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                          </p>
+                        {format(
+                          new Date(selectedEvent.startDate),
+                          "d 'de' MMMM 'de' yyyy",
+                          { locale: ptBR },
                         )}
+                      </p>
+                      {format(
+                        new Date(selectedEvent.startDate),
+                        "yyyy-MM-dd",
+                      ) !==
+                        format(
+                          new Date(selectedEvent.endDate),
+                          "yyyy-MM-dd",
+                        ) && (
+                        <p className="text-sm text-muted-foreground">
+                          até{" "}
+                          {format(
+                            new Date(selectedEvent.endDate),
+                            "d 'de' MMMM 'de' yyyy",
+                            { locale: ptBR },
+                          )}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -306,7 +374,8 @@ export default function EventsPage() {
                     </div>
                     <div>
                       <p className="font-medium">
-                        {format(new Date(selectedEvent.startDate), "HH:mm")} - {format(new Date(selectedEvent.endDate), "HH:mm")}
+                        {format(new Date(selectedEvent.startDate), "HH:mm")} -{" "}
+                        {format(new Date(selectedEvent.endDate), "HH:mm")}
                       </p>
                     </div>
                   </div>
@@ -319,14 +388,19 @@ export default function EventsPage() {
                       {selectedEvent.address ? (
                         <>
                           <p className="font-medium">
-                            {selectedEvent.address.street}, {selectedEvent.address.number}
+                            {selectedEvent.address.street},{" "}
+                            {selectedEvent.address.number}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {selectedEvent.address.neighborhood}, {selectedEvent.address.city} - {selectedEvent.address.state}
+                            {selectedEvent.address.neighborhood},{" "}
+                            {selectedEvent.address.city} -{" "}
+                            {selectedEvent.address.state}
                           </p>
                         </>
                       ) : (
-                        <p className="text-sm text-muted-foreground">Local ainda nao informado.</p>
+                        <p className="text-sm text-muted-foreground">
+                          Local ainda não informado.
+                        </p>
                       )}
                     </div>
                   </div>
@@ -336,7 +410,9 @@ export default function EventsPage() {
 
                 <div className="mb-6">
                   <h4 className="font-semibold mb-2">Sobre o evento</h4>
-                  <p className="text-muted-foreground">{selectedEvent.description}</p>
+                  <p className="text-muted-foreground">
+                    {selectedEvent.description}
+                  </p>
                 </div>
 
                 {selectedEvent.business && (
@@ -346,12 +422,16 @@ export default function EventsPage() {
                       <h4 className="font-semibold mb-3">Organizado por</h4>
                       <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                         <img
-                          src={resolveImageSrc(selectedEvent.business.coverImage)}
+                          src={resolveImageSrc(
+                            selectedEvent.business.coverImage,
+                          )}
                           alt={selectedEvent.business.name}
                           className="w-12 h-12 rounded-full object-cover"
                         />
                         <div className="flex-1">
-                          <p className="font-medium">{selectedEvent.business.name}</p>
+                          <p className="font-medium">
+                            {selectedEvent.business.name}
+                          </p>
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
@@ -362,7 +442,10 @@ export default function EventsPage() {
                 {selectedEvent.tags.length > 0 && (
                   <div className="mt-6 flex flex-wrap gap-2">
                     {selectedEvent.tags.map((tag) => (
-                      <span key={tag} className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-full">
+                      <span
+                        key={tag}
+                        className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-full"
+                      >
                         #{tag}
                       </span>
                     ))}
@@ -376,6 +459,3 @@ export default function EventsPage() {
     </div>
   );
 }
-
-
-
