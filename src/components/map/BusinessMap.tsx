@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Baazar } from "@/lib/graphql/generated";
@@ -15,7 +15,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-const CTRL_GESTURE_MESSAGE = "Use Ctrl + arraste ou scroll para interagir com o mapa.";
+const CTRL_GESTURE_MESSAGE =
+  "Use Ctrl + arraste ou scroll para interagir com o mapa.";
 const TOUCH_GESTURE_MESSAGE = "Use dois dedos para mover o mapa.";
 const DF_BOUNDS: L.LatLngBoundsExpression = [
   [-15.93, -48.15],
@@ -36,7 +37,10 @@ interface BusinessMapProps {
 function hasCoarsePointer() {
   if (typeof window === "undefined") return false;
 
-  return window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
+  return (
+    window.matchMedia("(pointer: coarse)").matches ||
+    "ontouchstart" in window
+  );
 }
 
 export function BusinessMap({
@@ -79,19 +83,22 @@ export function BusinessMap({
       dragging: false,
       touchZoom: false,
       boxZoom: false,
-      doubleClickZoom: false,
+      doubleClickZoom: !touchDevice,
     });
 
     mapInstanceRef.current = map;
 
     if (touchDevice) {
-      map.getContainer().style.touchAction = "pan-x pan-y";
+      map.getContainer().style.touchAction = "none";
     }
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    }).addTo(map);
+    L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      },
+    ).addTo(map);
 
     map.fitBounds(DF_BOUNDS);
 
@@ -131,14 +138,12 @@ export function BusinessMap({
       if (!touchDevice) return;
       map.dragging.disable();
       map.touchZoom.disable();
-      container.style.touchAction = "pan-x pan-y";
     };
 
     const enableTouchInteractions = () => {
       if (!touchDevice) return;
       map.dragging.enable();
       map.touchZoom.enable();
-      container.style.touchAction = "none";
     };
 
     const handleWheel = (event: WheelEvent) => {
@@ -178,50 +183,67 @@ export function BusinessMap({
       disableDesktopInteractions();
     };
 
-    const updateTouchInteractions = (touchCount: number) => {
-      if (!touchDevice) return;
+    if (touchDevice) {
+      const updateTouchInteractions = (touchCount: number) => {
+        if (touchCount >= 2) {
+          enableTouchInteractions();
+          return;
+        }
 
-      if (touchCount >= 2) {
-        enableTouchInteractions();
-        return;
-      }
+        disableTouchInteractions();
+      };
+
+      const handleTouchStart = (event: TouchEvent) => {
+        updateTouchInteractions(event.touches.length);
+
+        if (event.touches.length < 2) {
+          showGestureHintRef.current(TOUCH_GESTURE_MESSAGE);
+        }
+      };
+
+      const handleTouchMove = (event: TouchEvent) => {
+        updateTouchInteractions(event.touches.length);
+      };
+
+      const handleTouchEnd = (event: TouchEvent) => {
+        updateTouchInteractions(event.touches.length);
+      };
+
+      const handleTouchCancel = () => {
+        updateTouchInteractions(0);
+      };
 
       disableTouchInteractions();
-    };
 
-    const handleTouchStart = (event: TouchEvent) => {
-      updateTouchInteractions(event.touches.length);
+      container.addEventListener("touchstart", handleTouchStart, {
+        passive: true,
+      });
+      container.addEventListener("touchmove", handleTouchMove, {
+        passive: true,
+      });
+      container.addEventListener("touchend", handleTouchEnd, {
+        passive: true,
+      });
+      container.addEventListener("touchcancel", handleTouchCancel, {
+        passive: true,
+      });
+      window.addEventListener("blur", handleWindowBlur);
 
-      if (event.touches.length < 2) {
-        showGestureHintRef.current(TOUCH_GESTURE_MESSAGE);
-      }
-    };
+      return () => {
+        container.removeEventListener("touchstart", handleTouchStart);
+        container.removeEventListener("touchmove", handleTouchMove);
+        container.removeEventListener("touchend", handleTouchEnd);
+        container.removeEventListener("touchcancel", handleTouchCancel);
+        window.removeEventListener("blur", handleWindowBlur);
 
-    const handleTouchMove = (event: TouchEvent) => {
-      updateTouchInteractions(event.touches.length);
-
-      if (event.touches.length < 2) {
         disableTouchInteractions();
-      }
-    };
-
-    const handleTouchEnd = (event: TouchEvent) => {
-      updateTouchInteractions(event.touches.length);
-    };
-
-    const handleTouchCancel = () => {
-      updateTouchInteractions(0);
-    };
+      };
+    }
 
     disableDesktopInteractions();
-    disableTouchInteractions();
 
     container.addEventListener("wheel", handleWheel, { passive: true });
     container.addEventListener("mousedown", handleMouseDown);
-    container.addEventListener("touchstart", handleTouchStart, { passive: true });
-    container.addEventListener("touchmove", handleTouchMove, { passive: true });
-    container.addEventListener("touchend", handleTouchEnd, { passive: true });
-    container.addEventListener("touchcancel", handleTouchCancel, { passive: true });
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("blur", handleWindowBlur);
@@ -229,16 +251,11 @@ export function BusinessMap({
     return () => {
       container.removeEventListener("wheel", handleWheel);
       container.removeEventListener("mousedown", handleMouseDown);
-      container.removeEventListener("touchstart", handleTouchStart);
-      container.removeEventListener("touchmove", handleTouchMove);
-      container.removeEventListener("touchend", handleTouchEnd);
-      container.removeEventListener("touchcancel", handleTouchCancel);
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", handleWindowBlur);
 
       disableDesktopInteractions();
-      disableTouchInteractions();
     };
   }, []);
 
@@ -259,9 +276,9 @@ export function BusinessMap({
     markersRef.current = [];
 
     businesses
-      .filter((b) => !b.isOnline && b.address)
+      .filter((b) => !b.isOnline && b.address && b.locationMap)
       .forEach((business) => {
-        if (!business.address) return;
+        if (!business.locationMap) return;
 
         const isSelected = business.id === selectedBusinessId;
 
