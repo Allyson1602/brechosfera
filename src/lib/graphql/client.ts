@@ -19,7 +19,7 @@ export const DEFAULT_EVENT_IMAGE_URL = buildApiUrl(
 
 export const apolloClient = new ApolloClient({
   link: new HttpLink({
-    uri: "https://api-brechosfera.allysonathyrson-work.workers.dev/graphql",
+    uri: "https://api-brechosfera.vercel.app/graphql",
   }),
   cache: new InMemoryCache(),
 });
