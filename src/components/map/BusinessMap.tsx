@@ -23,6 +23,20 @@ const DF_BOUNDS: L.LatLngBoundsExpression = [
   [-15.65, -47.75],
 ];
 
+function getTouchMidpoint(touches: TouchList) {
+  if (touches.length < 2) return null;
+
+  const firstTouch = touches.item(0);
+  const secondTouch = touches.item(1);
+
+  if (!firstTouch || !secondTouch) return null;
+
+  return L.point(
+    (firstTouch.clientX + secondTouch.clientX) / 2,
+    (firstTouch.clientY + secondTouch.clientY) / 2,
+  );
+}
+
 interface BusinessMapProps {
   businesses: Baazar[];
   center?: { lat: number; lng: number };
@@ -58,6 +72,7 @@ export function BusinessMap({
   const markersRef = useRef<L.Marker[]>([]);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const gestureTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchPanPointRef = useRef<L.Point | null>(null);
   const showGestureHintRef = useRef<(message: string) => void>(() => undefined);
   const [gestureHint, setGestureHint] = useState<string | null>(null);
 
@@ -89,7 +104,7 @@ export function BusinessMap({
     mapInstanceRef.current = map;
 
     if (touchDevice) {
-      map.getContainer().style.touchAction = "none";
+      map.getContainer().style.touchAction = "pan-x pan-y";
     }
 
     L.tileLayer(
@@ -138,12 +153,7 @@ export function BusinessMap({
       if (!touchDevice) return;
       map.dragging.disable();
       map.touchZoom.disable();
-    };
-
-    const enableTouchInteractions = () => {
-      if (!touchDevice) return;
-      map.dragging.enable();
-      map.touchZoom.enable();
+      touchPanPointRef.current = null;
     };
 
     const handleWheel = (event: WheelEvent) => {
@@ -184,42 +194,55 @@ export function BusinessMap({
     };
 
     if (touchDevice) {
-      const updateTouchInteractions = (touchCount: number) => {
-        if (touchCount >= 2) {
-          enableTouchInteractions();
+      const handleTouchStart = (event: TouchEvent) => {
+        if (event.touches.length < 2) {
+          touchPanPointRef.current = null;
+          showGestureHintRef.current(TOUCH_GESTURE_MESSAGE);
           return;
         }
 
-        disableTouchInteractions();
-      };
-
-      const handleTouchStart = (event: TouchEvent) => {
-        updateTouchInteractions(event.touches.length);
-
-        if (event.touches.length < 2) {
-          showGestureHintRef.current(TOUCH_GESTURE_MESSAGE);
-        }
+        event.preventDefault();
+        touchPanPointRef.current = getTouchMidpoint(event.touches);
       };
 
       const handleTouchMove = (event: TouchEvent) => {
-        updateTouchInteractions(event.touches.length);
+        if (event.touches.length < 2) {
+          touchPanPointRef.current = null;
+          return;
+        }
+
+        const currentPoint = getTouchMidpoint(event.touches);
+        const previousPoint = touchPanPointRef.current;
+
+        if (!currentPoint) return;
+
+        event.preventDefault();
+        touchPanPointRef.current = currentPoint;
+
+        if (!previousPoint) return;
+
+        const panOffset = previousPoint.subtract(currentPoint);
+
+        if (panOffset.x === 0 && panOffset.y === 0) return;
+
+        map.panBy(panOffset, { animate: false });
       };
 
       const handleTouchEnd = (event: TouchEvent) => {
-        updateTouchInteractions(event.touches.length);
+        touchPanPointRef.current = getTouchMidpoint(event.touches);
       };
 
       const handleTouchCancel = () => {
-        updateTouchInteractions(0);
+        touchPanPointRef.current = null;
       };
 
       disableTouchInteractions();
 
       container.addEventListener("touchstart", handleTouchStart, {
-        passive: true,
+        passive: false,
       });
       container.addEventListener("touchmove", handleTouchMove, {
-        passive: true,
+        passive: false,
       });
       container.addEventListener("touchend", handleTouchEnd, {
         passive: true,
