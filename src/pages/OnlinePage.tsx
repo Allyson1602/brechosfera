@@ -61,7 +61,7 @@ export default function OnlinePage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nome, descricao ou tipo de item..."
-                  className="pl-10"
+                  className="pl-10 max-w-lg"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -100,8 +100,7 @@ export default function OnlinePage() {
           <>
             <div className="mb-6">
               <h2 className="font-semibold text-lg">
-                {onlineBusinesses.length} loja
-                {onlineBusinesses.length !== 1 ? "s" : ""} online encontrada
+                {onlineBusinesses.length} lojinha
                 {onlineBusinesses.length !== 1 ? "s" : ""}
               </h2>
             </div>

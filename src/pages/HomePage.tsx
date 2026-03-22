@@ -151,21 +151,17 @@ export default function HomePage() {
 
           <div className="flex items-center justify-center gap-2 mt-3 text-sm">
             {geoLoading ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="flex gap-2 text-muted-foreground">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Obtendo sua localizacao...</span>
+                <span>Obtendo sua localização...</span>
               </div>
             ) : geoError ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="w-4 h-4" />
+              <div className="flex gap-2 text-muted-foreground">
                 <span>Usando localização padrão: {userLocationLabel}</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-primary">
-                <MapPin className="w-4 h-4" />
-                <span>
-                  Mostrando resultados próximos de: {userLocationLabel}
-                </span>
+              <div className="flex gap-2 text-primary">
+                <span>Resultados próximos de: {userLocationLabel}</span>
               </div>
             )}
           </div>
@@ -220,7 +216,7 @@ export default function HomePage() {
                 <h2 className="font-semibold">
                   {loading
                     ? "Buscando lojas..."
-                    : `${physicalBusinesses.length} loja${physicalBusinesses.length !== 1 ? "s" : ""} encontrada${physicalBusinesses.length !== 1 ? "s" : ""}`}
+                    : `${physicalBusinesses.length} lojinha${physicalBusinesses.length !== 1 ? "s" : ""} encontrada${physicalBusinesses.length !== 1 ? "s" : ""}`}
                 </h2>
               </div>
               {loading ? (
@@ -253,7 +249,7 @@ export default function HomePage() {
               <h2 className="font-semibold text-lg">
                 {loading
                   ? "Buscando lojas..."
-                  : `${physicalBusinesses.length} loja${physicalBusinesses.length !== 1 ? "s" : ""} encontrada${physicalBusinesses.length !== 1 ? "s" : ""}`}
+                  : `${physicalBusinesses.length} lojinha${physicalBusinesses.length !== 1 ? "s" : ""} encontrada${physicalBusinesses.length !== 1 ? "s" : ""}`}
               </h2>
             </div>
             {loading ? (

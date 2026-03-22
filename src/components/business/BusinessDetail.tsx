@@ -239,6 +239,7 @@ export function BusinessDetail({
               <div className="mb-4">
                 <h4 className="mb-2 flex items-center gap-2 font-semibold">
                   <Clock className="h-4 w-4" />
+                  Horário de Funcionamento
                 </h4>
                 <div className="grid gap-2 text-sm">
                   {openingHours.map((hours) => (
