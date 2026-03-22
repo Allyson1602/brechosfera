@@ -1,7 +1,11 @@
 import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
 
-const rawApiBaseUrl =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const rawApiBaseUrl = "https://api-brechosfera.vercel.app";
+// const rawApiBaseUrl =
+//   import.meta.env.VITE_API_BASE_URL ||
+//   (import.meta.env.PROD
+//     ? "https://api-brechosfera.vercel.app"
+//     : "http://localhost:3000");
 
 export const API_BASE_URL = rawApiBaseUrl.replace(/\/$/, "");
 
@@ -19,7 +23,7 @@ export const DEFAULT_EVENT_IMAGE_URL = buildApiUrl(
 
 export const apolloClient = new ApolloClient({
   link: new HttpLink({
-    uri: "https://api-brechosfera.vercel.app/graphql",
+    uri: buildApiUrl("/graphql"),
   }),
   cache: new InMemoryCache(),
 });

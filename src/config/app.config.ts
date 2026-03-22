@@ -4,7 +4,6 @@
 export const appConfig = {
   // Informações gerais do app
   name: "Brechosfera",
-  description: "Os melhores bazares e brechós perto de você",
   tagline: "Seu guia de achados únicos",
 
   // Configurações de localização padrão (Brasil)

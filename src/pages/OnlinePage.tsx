@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { AlertCircle, Globe, Search } from "lucide-react";
+import { AlertCircle, Globe } from "lucide-react";
 import { useQuery } from "@apollo/client/react";
-import { Input } from "@/components/ui/input";
 import { BusinessCard } from "@/components/business/BusinessCard";
 import { BusinessDetail } from "@/components/business/BusinessDetail";
+import { BusinessSearchField } from "@/components/business/BusinessSearchField";
 import { getItemTypeSearchValue } from "@/lib/business/itemTypeLabels";
 import { Baazar } from "@/lib/graphql/generated";
 import { GET_ONLINE_BAAZARS } from "@/lib/graphql/queries/business";
@@ -20,19 +20,18 @@ export default function OnlinePage() {
   const onlineBusinesses = useMemo(() => {
     const dataItems = data?.findAllOnlineBaazars || [];
 
-    return dataItems.filter((b) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          b.name.toLowerCase().includes(query) ||
-          (b.description || "").toLowerCase().includes(query) ||
-          b.itemsType.some((item) =>
-            getItemTypeSearchValue(item).includes(query),
-          )
-        );
-      }
+    return dataItems.filter((business) => {
+      if (!searchQuery) return true;
 
-      return true;
+      const query = searchQuery.toLowerCase();
+
+      return (
+        business.name.toLowerCase().includes(query) ||
+        (business.description || "").toLowerCase().includes(query) ||
+        business.itemsType.some((item) =>
+          getItemTypeSearchValue(item).includes(query),
+        )
+      );
     });
   }, [data, searchQuery]);
 
@@ -43,29 +42,25 @@ export default function OnlinePage() {
 
   return (
     <div>
-      <section className="bg-transparent pt-8 pb-4 px-4">
+      <section className="bg-transparent px-4 pb-4 pt-8">
         <div className="container mx-auto text-center">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            Bazares e Brechos <span className="text-primary">Online</span>
+          <h1 className="mb-2 text-3xl font-bold md:text-4xl">
+            Bazares e Brechós <span className="text-primary">online</span>
           </h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Compre de qualquer lugar do Brasil! Encontre os melhores brechos e
+          <p className="mx-auto max-w-xl text-muted-foreground">
+            Compre de qualquer lugar do Brasil. Encontre os melhores brechós e
             bazares que vendem online.
           </p>
         </div>
 
-        <div className="sticky pt-9 z-40">
+        <div className="sticky z-40 pt-9">
           <div className="container mx-auto px-4 py-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome, descricao ou tipo de item..."
-                  className="pl-10 max-w-lg"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <BusinessSearchField
+                value={searchQuery}
+                onChange={setSearchQuery}
+                inputClassName="max-w-lg"
+              />
             </div>
           </div>
         </div>
@@ -73,9 +68,9 @@ export default function OnlinePage() {
 
       <div className="container mx-auto px-4 py-6">
         {error ? (
-          <div className="text-center py-16">
-            <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">
+          <div className="py-16 text-center">
+            <AlertCircle className="mx-auto mb-4 h-16 w-16 text-destructive" />
+            <h2 className="mb-2 text-xl font-semibold">
               Erro ao carregar lojas online
             </h2>
             <p className="text-muted-foreground">
@@ -83,13 +78,13 @@ export default function OnlinePage() {
             </p>
           </div>
         ) : loading ? (
-          <div className="text-center py-16">
-            <h2 className="text-xl font-semibold mb-2">Carregando lojas...</h2>
+          <div className="py-16 text-center">
+            <h2 className="mb-2 text-xl font-semibold">Carregando lojas...</h2>
           </div>
         ) : onlineBusinesses.length === 0 ? (
-          <div className="text-center py-16">
-            <Globe className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">
+          <div className="py-16 text-center">
+            <Globe className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+            <h2 className="mb-2 text-xl font-semibold">
               Nenhum resultado encontrado
             </h2>
             <p className="text-muted-foreground">
@@ -99,12 +94,12 @@ export default function OnlinePage() {
         ) : (
           <>
             <div className="mb-6">
-              <h2 className="font-semibold text-lg">
+              <h2 className="text-lg font-semibold">
                 {onlineBusinesses.length} lojinha
                 {onlineBusinesses.length !== 1 ? "s" : ""}
               </h2>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {onlineBusinesses.map((business) => (
                 <BusinessCard
                   key={business.id}

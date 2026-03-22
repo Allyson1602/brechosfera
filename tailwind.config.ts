@@ -96,7 +96,7 @@ export default {
   		},
   		fontFamily: {
   			sans: [
-  				'Poppins',
+  				'Nunito',
   				'ui-sans-serif',
   				'system-ui',
   				'-apple-system',

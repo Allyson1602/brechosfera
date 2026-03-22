@@ -85,9 +85,15 @@ export function BusinessDetail({
       .filter((image, index, self) => self.indexOf(image) === index);
   }, [business]);
 
+  useEffect(() => {
+    allImages.forEach((image) => {
+      const preloadImage = new Image();
+      preloadImage.src = image;
+    });
+  }, [allImages]);
+
   if (!business) return null;
 
-  const currentImage = allImages[currentImageIndex] ?? allImages[0] ?? null;
   const itemTypes = business.itemsType ?? [];
   const openingHours = business.openingHours ?? [];
   const rating = calculateRating(business.evaluations);
@@ -119,16 +125,31 @@ export function BusinessDetail({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onClose}>
+    <Sheet
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose();
+      }}
+    >
       <SheetContent className="w-full overflow-y-auto p-0 sm:max-w-lg">
         <div className="relative">
           <div className="relative h-64 bg-muted">
-            {currentImage ? (
-              <img
-                src={currentImage}
-                alt={business.name}
-                className="h-full w-full object-cover"
-              />
+            {allImages.length > 0 ? (
+              allImages.map((image, index) => (
+                <img
+                  key={image}
+                  src={image}
+                  alt={business.name}
+                  draggable={false}
+                  fetchPriority={index === currentImageIndex ? "high" : "auto"}
+                  className={`absolute inset-0 h-full w-full select-none object-cover transition-opacity duration-200 ${
+                    index === currentImageIndex
+                      ? "opacity-100"
+                      : "pointer-events-none opacity-0"
+                  }`}
+                  onDragStart={(event) => event.preventDefault()}
+                />
+              ))
             ) : (
               <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
                 Imagem indisponível

@@ -6,11 +6,27 @@ Requisitos:
 - Node.js 18+
 - npm ou pnpm
 
-Instalar dependências:
+Instalar dependencias:
 
 ```sh
 npm install
 ```
+
+## Variaveis de ambiente
+
+Desenvolvimento:
+
+```sh
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+Producao:
+
+```sh
+VITE_API_BASE_URL=https://api-brechosfera.vercel.app
+```
+
+## Scripts
 
 Rodar em desenvolvimento:
 
@@ -18,7 +34,7 @@ Rodar em desenvolvimento:
 npm run dev
 ```
 
-Build de produção:
+Build de producao:
 
 ```sh
 npm run build

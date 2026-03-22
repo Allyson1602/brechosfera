@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { appConfig } from '@/config/app.config';
+import { useCallback, useEffect, useState } from "react";
+import { appConfig } from "@/config/app.config";
 
 interface GeolocationState {
   latitude: number;
@@ -17,13 +17,13 @@ export function useGeolocation() {
   });
 
   const getCurrentPosition = useCallback(() => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
     if (!navigator.geolocation) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: false,
-        error: 'Geolocalização não é suportada pelo seu navegador',
+        error: "Geolocalização não é suportada pelo seu navegador",
       }));
       return;
     }
@@ -38,19 +38,21 @@ export function useGeolocation() {
         });
       },
       (error) => {
-        let errorMessage = 'Erro ao obter localização';
+        let errorMessage = "Erro ao obter localização";
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Permissão de localização negada';
+            errorMessage = "Permissão de localização negada";
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Localização indisponível';
+            errorMessage = "Localização indisponível";
             break;
           case error.TIMEOUT:
-            errorMessage = 'Tempo esgotado ao obter localização';
+            errorMessage = "Tempo esgotado ao obter localização";
             break;
         }
-        setState(prev => ({
+
+        setState((prev) => ({
           ...prev,
           loading: false,
           error: errorMessage,
@@ -60,7 +62,7 @@ export function useGeolocation() {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 300000, // 5 minutos
-      }
+      },
     );
   }, []);
 

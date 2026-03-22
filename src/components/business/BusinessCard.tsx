@@ -23,27 +23,27 @@ export function BusinessCard({
   if (variant === "compact") {
     return (
       <Card
-        className="overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-border/50"
+        className="cursor-pointer overflow-hidden border-border/50 transition-all hover:-translate-y-1 hover:shadow-lg"
         onClick={onClick}
       >
         <div className="flex gap-3 p-3">
           <img
             src={logoSrc}
             alt={business.name}
-            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+            className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
           />
-          <div className="flex-1 min-w-0 gap-1">
-            <h3 className="font-semibold text-sm truncate">{business.name}</h3>
+          <div className="min-w-0 flex-1 gap-1">
+            <h3 className="truncate text-sm font-semibold">{business.name}</h3>
 
             {business.isOnline ? (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Globe className="w-3 h-3" />
+                <Globe className="h-3 w-3" />
                 <span>Online</span>
               </div>
             ) : (
               business.address && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="w-3 h-3" />
+                  <MapPin className="h-3 w-3" />
                   <span className="truncate">
                     {parseAddress(business.address).neighborhood},{" "}
                     {parseAddress(business.address).city}
@@ -53,8 +53,8 @@ export function BusinessCard({
             )}
 
             {calculateRating(business.evaluations).count > 0 ? (
-              <div className="flex items-center gap-1 mt-1">
-                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+              <div className="mt-1 flex items-center gap-1">
+                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                 <span className="text-xs font-medium">
                   {calculateRating(business.evaluations).rating}
                 </span>
@@ -63,8 +63,8 @@ export function BusinessCard({
                 </span>
               </div>
             ) : (
-              <div className="flex items-center gap-1 mt-1 text-muted-foreground">
-                <Star className="w-3 h-3" />
+              <div className="mt-1 flex items-center gap-1 text-muted-foreground">
+                <Star className="h-3 w-3" />
                 <p className="text-xs">Não avaliado</p>
               </div>
             )}
@@ -76,59 +76,63 @@ export function BusinessCard({
 
   return (
     <Card
-      className="overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-border/50 group"
+      className="group cursor-pointer overflow-hidden border-border/50 transition-all hover:-translate-y-1 hover:shadow-lg"
       onClick={onClick}
     >
       <div className="relative">
         <img
           src={logoSrc}
           alt={business.name}
-          className="w-full h-48 object-cover transition-transform group-hover:scale-105"
+          className="h-48 w-full object-cover transition-transform group-hover:scale-105"
         />
-        <div className="absolute top-3 left-3 flex gap-2">
+        <div className="absolute left-3 top-3 flex gap-2">
           <Badge variant="secondary" className="bg-slate-500 backdrop-blur-sm">
             Loja
           </Badge>
 
           {business.isOnline && (
             <Badge className="bg-primary/90 backdrop-blur-sm">
-              <Globe className="w-3 h-3 mr-1" />
+              <Globe className="mr-1 h-3 w-3" />
               Online
             </Badge>
           )}
         </div>
 
-        <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
-          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-card/90 px-2 py-1 backdrop-blur-sm">
+          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
           <span className="text-sm font-semibold">
             {calculateRating(business.evaluations).rating}
           </span>
         </div>
       </div>
       <CardContent className="p-4">
-        <h3 className="font-semibold text-lg mb-1 line-clamp-1">
+        <h3 className="mb-1 line-clamp-1 text-lg font-semibold">
           {business.name}
         </h3>
         {!business.isOnline && business.address ? (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-            <MapPin className="w-4 h-4 flex-shrink-0" />
+          <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
+            <MapPin className="h-4 w-4 flex-shrink-0" />
             <span className="truncate">
               {parseAddress(business.address).neighborhood},{" "}
               {parseAddress(business.address).city}
             </span>
           </div>
         ) : (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-            <Globe className="w-4 h-4" />
-            <span>Vendas Online</span>
+          <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
+            <Globe className="h-4 w-4" />
+            <span>Vendas online</span>
           </div>
         )}
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+        <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
           {business.description}
         </p>
         <div className="flex flex-wrap gap-1">
           {business.itemsType.slice(0, 3).map((item) => (
-            <Badge key={getItemTypeLabel(item)} variant="outline" className="text-xs">
+            <Badge
+              key={getItemTypeLabel(item)}
+              variant="outline"
+              className="text-xs"
+            >
               {getItemTypeLabel(item)}
             </Badge>
           ))}

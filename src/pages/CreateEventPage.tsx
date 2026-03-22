@@ -55,7 +55,7 @@ const createEventSchema = z
     description: z
       .string()
       .min(20, "Descrição deve ter pelo menos 20 caracteres"),
-    startDate: z.string().min(1, "Informe a data de inicio"),
+    startDate: z.string().min(1, "Informe a data de início"),
     startTime: z.string().min(1, "Informe o horário de início"),
     endDate: z.string().min(1, "Informe a data de fim"),
     endTime: z.string().min(1, "Informe o horário de fim"),
@@ -254,7 +254,7 @@ export default function CreateEventPage() {
             <CardTitle>Dados do evento</CardTitle>
             <CardDescription>
               Vincular com um bazar é opcional. O evento continua válido sem
-              vinculo.
+              vínculo.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -387,7 +387,7 @@ export default function CreateEventPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="startDate">Data de inicio *</Label>
+                  <Label htmlFor="startDate">Data de início *</Label>
                   <Input
                     id="startDate"
                     type="date"

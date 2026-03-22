@@ -60,7 +60,7 @@ const registerSchema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   description: z
     .string()
-    .min(20, "Descricao deve ter pelo menos 20 caracteres"),
+    .min(20, "Descrição deve ter pelo menos 20 caracteres"),
   category: z.enum(["bazar", "brecho"]),
   isOnline: z.boolean(),
   phone: z.string().optional(),
@@ -68,7 +68,7 @@ const registerSchema = z.object({
   email: z.string().email("E-mail inválido").optional().or(z.literal("")),
   instagram: z.string().optional(),
   facebook: z.string().optional(),
-  website: z.string().url("URL invalida").optional().or(z.literal("")),
+  website: z.string().url("URL inválida").optional().or(z.literal("")),
   street: z.string().optional(),
   number: z.string().optional(),
   neighborhood: z.string().optional(),
@@ -312,7 +312,7 @@ export default function RegisterPage() {
                 Informações básicas
               </CardTitle>
               <CardDescription>
-                Conte-nos sobre seu bazar ou brecho
+                Conte-nos sobre seu bazar ou brechó
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -320,7 +320,7 @@ export default function RegisterPage() {
                 <Label htmlFor="name">Nome da loja *</Label>
                 <Input
                   id="name"
-                  placeholder="Ex: Brecho das Amigas"
+                  placeholder="Ex: Brechó das Amigas"
                   {...register("name")}
                 />
                 {errors.name && (
@@ -342,14 +342,14 @@ export default function RegisterPage() {
                     <SelectValue placeholder="Selecione a categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="brecho">Brecho</SelectItem>
+                    <SelectItem value="brecho">Brechó</SelectItem>
                     <SelectItem value="bazar">Bazar</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Descricao *</Label>
+                <Label htmlFor="description">Descrição *</Label>
                 <Textarea
                   id="description"
                   placeholder="Descreva sua loja e o que vende"
@@ -410,7 +410,7 @@ export default function RegisterPage() {
                   <div>
                     <p className="font-medium">Vendas online</p>
                     <p className="text-sm text-muted-foreground">
-                      Marque se voce vende pela internet
+                      Marque se você vende pela internet
                     </p>
                   </div>
                 </div>
@@ -533,7 +533,7 @@ export default function RegisterPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-primary" />
-                  Endereco
+                  Endereço
                 </CardTitle>
                 <CardDescription>Onde fica sua loja?</CardDescription>
               </CardHeader>
@@ -548,7 +548,7 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="number">Numero</Label>
+                    <Label htmlFor="number">Número</Label>
                     <Input
                       id="number"
                       placeholder="1234"
@@ -570,7 +570,7 @@ export default function RegisterPage() {
                     <Label htmlFor="city">Cidade</Label>
                     <Input
                       id="city"
-                      placeholder="Sao Paulo"
+                      placeholder="São Paulo"
                       {...register("city")}
                     />
                   </div>

@@ -283,14 +283,20 @@ export function BusinessMap({
   }, []);
 
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+    if (!map || !selectedBusinessId) return;
 
-    if (selectedBusinessId && center) {
-      mapInstanceRef.current.setView([center.lat, center.lng], zoom, {
-        animate: true,
-      });
-    }
-  }, [selectedBusinessId, center, zoom]);
+    const selectedBusiness = businesses.find(
+      (business) => business.id === selectedBusinessId,
+    );
+    const selectedLocation = selectedBusiness?.locationMap;
+
+    if (!selectedLocation) return;
+
+    map.setView([selectedLocation.latitude, selectedLocation.longitude], zoom, {
+      animate: true,
+    });
+  }, [businesses, selectedBusinessId, zoom]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;

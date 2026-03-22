@@ -1,9 +1,11 @@
-﻿import { BusinessCard } from "@/components/business/BusinessCard";
+import { BusinessCard } from "@/components/business/BusinessCard";
 import { BusinessDetail } from "@/components/business/BusinessDetail";
+import { BusinessSearchField } from "@/components/business/BusinessSearchField";
 import { BusinessMap } from "@/components/map/BusinessMap";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { appConfig } from "@/config/app.config";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { getItemTypeSearchValue } from "@/lib/business/itemTypeLabels";
 import { Baazar } from "@/lib/graphql/generated";
 import { GET_LOCAL_BAAZARS } from "@/lib/graphql/queries/business";
 import { useQuery } from "@apollo/client/react";
@@ -65,14 +67,32 @@ export default function HomePage() {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [selectedBusiness, setSelectedBusiness] = useState<Baazar | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [userLocationLabel, setUserLocationLabel] = useState<string>(
     `${appConfig.defaultLocation.city}, ${appConfig.defaultLocation.state}`,
   );
 
   const physicalBusinesses = useMemo(() => {
     const dataItems = data?.findAllLocalBaazars || [];
-    return dataItems.filter((b) => !b.isOnline);
+    return dataItems.filter((business) => !business.isOnline);
   }, [data]);
+
+  const filteredBusinesses = useMemo(() => {
+    if (!searchQuery.trim()) return physicalBusinesses;
+
+    const query = searchQuery.trim().toLowerCase();
+
+    return physicalBusinesses.filter((business) => {
+      return (
+        business.name.toLowerCase().includes(query) ||
+        (business.description || "").toLowerCase().includes(query) ||
+        (business.address || "").toLowerCase().includes(query) ||
+        business.itemsType.some((item) =>
+          getItemTypeSearchValue(item).includes(query),
+        )
+      );
+    });
+  }, [physicalBusinesses, searchQuery]);
 
   const handleBusinessClick = (business: Baazar) => {
     setSelectedBusiness(business);
@@ -123,10 +143,10 @@ export default function HomePage() {
 
         if (!response.ok) return;
 
-        const data = await response.json();
-        setLocationFromAddress(data?.address);
+        const locationData = await response.json();
+        setLocationFromAddress(locationData?.address);
       } catch {
-        // mantem fallback configurado no appConfig
+        // mantém fallback configurado no appConfig
       }
     };
 
@@ -135,24 +155,21 @@ export default function HomePage() {
     return () => controller.abort();
   }, [geoError, geoLoading, latitude, longitude]);
 
-  const hasBusinesses = physicalBusinesses.length > 0;
+  const hasBusinesses = filteredBusinesses.length > 0;
 
   return (
-    <div className="bg-transparent overflow-y-auto lg:h-[calc(100dvh-4rem)] lg:min-h-0 lg:overflow-hidden lg:flex lg:flex-col">
-      <section className="bg-transparent pt-6 md:pt-8 pb-4 px-4 lg:pt-3 lg:pb-2 lg:shrink-0">
+    <div className="bg-transparent lg:flex lg:h-[calc(100dvh-4rem)] lg:min-h-0 lg:flex-col lg:overflow-hidden">
+      <section className="bg-transparent px-4 pt-6 lg:shrink-0 lg:pb-2 lg:pt-3 md:pt-8">
         <div className="container mx-auto text-center">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+          <h1 className="mb-2 text-3xl font-bold md:text-4xl">
             Descubra <span className="text-primary">achados únicos</span> perto
             de você
           </h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            {appConfig.description}
-          </p>
 
-          <div className="flex items-center justify-center gap-2 mt-3 text-sm">
+          <div className="mt-3 flex items-center justify-center gap-2 text-sm">
             {geoLoading ? (
               <div className="flex gap-2 text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Obtendo sua localização...</span>
               </div>
             ) : geoError ? (
@@ -167,18 +184,23 @@ export default function HomePage() {
           </div>
 
           <div className="container mx-auto px-4 pt-6 lg:pt-2">
-            <div className="flex items-center justify-end gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-8">
+              <BusinessSearchField
+                value={searchQuery}
+                onChange={setSearchQuery}
+                inputClassName="max-w-lg"
+              />
               <Tabs
                 value={viewMode}
-                onValueChange={(v) => setViewMode(v as "map" | "list")}
+                onValueChange={(value) => setViewMode(value as "map" | "list")}
               >
                 <TabsList className="grid w-[160px] grid-cols-2">
                   <TabsTrigger value="map" className="gap-1">
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="h-4 w-4" />
                     Mapa
                   </TabsTrigger>
                   <TabsTrigger value="list" className="gap-1">
-                    <List className="w-4 h-4" />
+                    <List className="h-4 w-4" />
                     Lista
                   </TabsTrigger>
                 </TabsList>
@@ -188,15 +210,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-5 lg:py-3 lg:flex-1 lg:min-h-0">
+      <div className="container mx-auto px-4 pb-5 pt-2 lg:min-h-0 lg:flex-1 lg:pb-3">
         {viewMode === "map" ? (
-          <div className="grid gap-4 lg:gap-5 h-full lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="h-[68dvh] min-h-[320px] sm:h-[70dvh] lg:h-full lg:min-h-0 rounded-lg overflow-hidden shadow-lg">
+          <div className="grid h-full gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="h-[68dvh] min-h-[320px] overflow-hidden rounded-lg shadow-lg sm:h-[70dvh] lg:h-full lg:min-h-0">
               {loading ? (
                 <LoadingPanel message="Carregando os pontos no mapa para você." />
               ) : (
                 <BusinessMap
-                  businesses={physicalBusinesses}
+                  businesses={filteredBusinesses}
                   center={{ lat: latitude, lng: longitude }}
                   onBusinessClick={handleBusinessClick}
                   selectedBusinessId={selectedBusiness?.id}
@@ -216,7 +238,7 @@ export default function HomePage() {
                 <h2 className="font-semibold">
                   {loading
                     ? "Buscando lojas..."
-                    : `${physicalBusinesses.length} lojinha${physicalBusinesses.length !== 1 ? "s" : ""} encontrada${physicalBusinesses.length !== 1 ? "s" : ""}`}
+                    : `${filteredBusinesses.length} lojinha${filteredBusinesses.length !== 1 ? "s" : ""} encontrada${filteredBusinesses.length !== 1 ? "s" : ""}`}
                 </h2>
               </div>
               {loading ? (
@@ -227,7 +249,7 @@ export default function HomePage() {
                 </div>
               ) : hasBusinesses ? (
                 <div className="space-y-3">
-                  {physicalBusinesses.map((business) => (
+                  {filteredBusinesses.map((business) => (
                     <BusinessCard
                       key={business.id}
                       business={business}
@@ -246,10 +268,10 @@ export default function HomePage() {
         ) : (
           <div className="space-y-6 lg:h-full lg:overflow-y-auto lg:pr-1">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-lg">
+              <h2 className="text-lg font-semibold">
                 {loading
                   ? "Buscando lojas..."
-                  : `${physicalBusinesses.length} lojinha${physicalBusinesses.length !== 1 ? "s" : ""} encontrada${physicalBusinesses.length !== 1 ? "s" : ""}`}
+                  : `${filteredBusinesses.length} lojinha${filteredBusinesses.length !== 1 ? "s" : ""} encontrada${filteredBusinesses.length !== 1 ? "s" : ""}`}
               </h2>
             </div>
             {loading ? (
@@ -259,8 +281,8 @@ export default function HomePage() {
                 Não foi possível carregar as lojas agora.
               </div>
             ) : hasBusinesses ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {physicalBusinesses.map((business) => (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+                {filteredBusinesses.map((business) => (
                   <BusinessCard
                     key={business.id}
                     business={business}
