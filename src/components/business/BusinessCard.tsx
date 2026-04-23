@@ -1,16 +1,80 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { calculateRating } from "@/helpers/calculateRating";
 import { parseAddress } from "@/helpers/parseAddress";
 import { getItemTypeLabel } from "@/lib/business/itemTypeLabels";
+import {
+  Baazar,
+  BaazarItemRenewalType,
+  BaazarStoreSizeType,
+} from "@/lib/graphql/generated";
 import { resolveImageSrc } from "@/lib/images/resolveImageSrc";
-import { Baazar } from "@/lib/graphql/generated";
-import { Globe, MapPin, Star } from "lucide-react";
+import {
+  ArrowRight,
+  Clock,
+  Globe,
+  HandHeart,
+  MapPin,
+  MessageCircle,
+  RefreshCcw,
+  Shirt,
+  Star,
+  Wallet,
+} from "lucide-react";
 
 interface BusinessCardProps {
   business: Baazar;
   onClick?: () => void;
   variant?: "default" | "compact";
+}
+
+const STORE_SIZE_LABELS: Record<BaazarStoreSizeType, string> = {
+  [BaazarStoreSizeType.Small]: "loja pequena",
+  [BaazarStoreSizeType.Medium]: "loja média",
+  [BaazarStoreSizeType.Large]: "loja grande",
+};
+
+const RENEWAL_LABELS: Record<BaazarItemRenewalType, string> = {
+  [BaazarItemRenewalType.Daily]: "novidades diárias",
+  [BaazarItemRenewalType.Weekly]: "novidades semanais",
+  [BaazarItemRenewalType.Monthly]: "novidades mensais",
+  [BaazarItemRenewalType.Quarterly]: "renovação trimestral",
+  [BaazarItemRenewalType.SemiAnnually]: "renovação semestral",
+  [BaazarItemRenewalType.Annually]: "renovação anual",
+};
+
+function formatCurrency(value?: number | null) {
+  if (!value || value <= 0) return "Preço a combinar";
+
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function getAddressLabel(address?: string | null) {
+  if (!address) return "Endereço não informado";
+
+  const parsedAddress = parseAddress(address);
+  const shortAddress = [parsedAddress.neighborhood, parsedAddress.city]
+    .filter(Boolean)
+    .join(", ");
+
+  return shortAddress || address;
+}
+
+function getFirstOpeningHour(openingHours?: string[]) {
+  return openingHours?.find((hour) => hour.trim().length > 0);
+}
+
+function hasWhatsapp(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.some((item) => String(item).trim().length > 0);
+  }
+
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 export function BusinessCard({
@@ -19,6 +83,15 @@ export function BusinessCard({
   variant = "default",
 }: BusinessCardProps) {
   const logoSrc = resolveImageSrc(business.logoImage);
+  const rating = calculateRating(business.evaluations);
+  const addressLabel = business.isOnline
+    ? "Atendimento online"
+    : getAddressLabel(business.address);
+  const firstOpeningHour = getFirstOpeningHour(business.openingHours);
+  const itemTypes = business.itemsType ?? [];
+  const visibleItemTypes = itemTypes.slice(0, variant === "compact" ? 2 : 4);
+  const priceLabel = formatCurrency(business.averagePrice);
+  const whatsappAvailable = hasWhatsapp(business.linkWhatsapp);
 
   if (variant === "compact") {
     return (
@@ -32,42 +105,40 @@ export function BusinessCard({
             alt={business.name}
             className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
           />
-          <div className="min-w-0 flex-1 gap-1">
-            <h3 className="truncate text-sm font-semibold">{business.name}</h3>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="truncate text-sm font-semibold">{business.name}</h3>
+              {rating.count > 0 && (
+                <span className="flex items-center gap-1 text-xs font-medium">
+                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                  {rating.rating}
+                </span>
+              )}
+            </div>
 
-            {business.isOnline ? (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              {business.isOnline ? (
                 <Globe className="h-3 w-3" />
-                <span>Online</span>
-              </div>
-            ) : (
-              business.address && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" />
-                  <span className="truncate">
-                    {parseAddress(business.address).neighborhood},{" "}
-                    {parseAddress(business.address).city}
-                  </span>
-                </div>
-              )
-            )}
+              ) : (
+                <MapPin className="h-3 w-3" />
+              )}
+              <span className="truncate">{addressLabel}</span>
+            </div>
 
-            {calculateRating(business.evaluations).count > 0 ? (
-              <div className="mt-1 flex items-center gap-1">
-                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                <span className="text-xs font-medium">
-                  {calculateRating(business.evaluations).rating}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {calculateRating(business.evaluations).count}
-                </span>
-              </div>
-            ) : (
-              <div className="mt-1 flex items-center gap-1 text-muted-foreground">
-                <Star className="h-3 w-3" />
-                <p className="text-xs">Não avaliado</p>
-              </div>
-            )}
+            <div className="mt-2 flex flex-wrap gap-1">
+              <Badge variant="secondary" className="text-[11px]">
+                {priceLabel}
+              </Badge>
+              {visibleItemTypes.map((item) => (
+                <Badge
+                  key={getItemTypeLabel(item)}
+                  variant="outline"
+                  className="text-[11px]"
+                >
+                  {getItemTypeLabel(item)}
+                </Badge>
+              ))}
+            </div>
           </div>
         </div>
       </Card>
@@ -76,71 +147,122 @@ export function BusinessCard({
 
   return (
     <Card
-      className="group cursor-pointer overflow-hidden border-border/50 transition-all hover:-translate-y-1 hover:shadow-lg"
+      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border-border/60 bg-card transition-all hover:-translate-y-1 hover:shadow-xl"
       onClick={onClick}
     >
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <img
           src={logoSrc}
           alt={business.name}
-          className="h-48 w-full object-cover transition-transform group-hover:scale-105"
+          className="h-52 w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <div className="absolute left-3 top-3 flex gap-2">
-          <Badge variant="secondary" className="bg-slate-500 backdrop-blur-sm">
-            Loja
+
+        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+          <Badge className="rounded-full bg-card/90 text-foreground shadow-sm backdrop-blur">
+            <Wallet className="mr-1 h-3 w-3 text-primary" />
+            {priceLabel}
           </Badge>
 
-          {business.isOnline && (
-            <Badge className="bg-primary/90 backdrop-blur-sm">
-              <Globe className="mr-1 h-3 w-3" />
-              Online
+          {business.isAcceptExchange && (
+            <Badge className="rounded-full bg-primary/90 text-primary-foreground shadow-sm backdrop-blur">
+              <RefreshCcw className="mr-1 h-3 w-3" />
+              Aceita troca
             </Badge>
           )}
         </div>
 
-        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-card/90 px-2 py-1 backdrop-blur-sm">
-          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-          <span className="text-sm font-semibold">
-            {calculateRating(business.evaluations).rating}
-          </span>
+        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-card/90 px-2.5 py-1 text-sm font-semibold shadow-sm backdrop-blur">
+          <Star
+            className={
+              rating.count > 0
+                ? "h-4 w-4 fill-yellow-400 text-yellow-400"
+                : "h-4 w-4 text-muted-foreground"
+            }
+          />
+          <span>{rating.count > 0 ? rating.rating : "Novo"}</span>
         </div>
       </div>
-      <CardContent className="p-4">
-        <h3 className="mb-1 line-clamp-1 text-lg font-semibold">
-          {business.name}
-        </h3>
-        {!business.isOnline && business.address ? (
-          <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4 flex-shrink-0" />
+
+      <CardContent className="flex flex-1 flex-col p-5">
+        <div className="space-y-2">
+          <div>
+            <h3 className="line-clamp-1 text-xl font-bold">{business.name}</h3>
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+              {business.isOnline ? (
+                <Globe className="h-4 w-4 flex-shrink-0 text-primary" />
+              ) : (
+                <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
+              )}
+              <span className="truncate">{addressLabel}</span>
+            </p>
+          </div>
+
+          <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
+            {business.description ||
+              "Loja cadastrada na Brechosfera com peças para garimpar sem pressa."}
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-2 text-sm">
+          <div className="flex items-center gap-2 rounded-2xl bg-muted/50 px-3 py-2">
+            <Shirt className="h-4 w-4 flex-shrink-0 text-primary" />
             <span className="truncate">
-              {parseAddress(business.address).neighborhood},{" "}
-              {parseAddress(business.address).city}
+              {visibleItemTypes.length > 0
+                ? visibleItemTypes.map((item) => getItemTypeLabel(item)).join(", ")
+                : "Variedade de peças"}
             </span>
           </div>
-        ) : (
-          <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
-            <Globe className="h-4 w-4" />
-            <span>Vendas online</span>
+
+          <div className="flex items-center gap-2 rounded-2xl bg-muted/50 px-3 py-2">
+            <Clock className="h-4 w-4 flex-shrink-0 text-primary" />
+            <span className="truncate">
+              {firstOpeningHour || "Horário sob consulta"}
+            </span>
           </div>
-        )}
-        <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
-          {business.description}
-        </p>
-        <div className="flex flex-wrap gap-1">
-          {business.itemsType.slice(0, 3).map((item) => (
-            <Badge
-              key={getItemTypeLabel(item)}
-              variant="outline"
-              className="text-xs"
-            >
+
+          <div className="flex items-center gap-2 rounded-2xl bg-muted/50 px-3 py-2">
+            <HandHeart className="h-4 w-4 flex-shrink-0 text-primary" />
+            <span className="truncate">
+              {RENEWAL_LABELS[business.itemRenewal] ||
+                STORE_SIZE_LABELS[business.storeSize] ||
+                "Garimpos selecionados"}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {visibleItemTypes.map((item) => (
+            <Badge key={getItemTypeLabel(item)} variant="outline">
               {getItemTypeLabel(item)}
             </Badge>
           ))}
-          {business.itemsType.length > 3 && (
-            <Badge variant="outline" className="text-xs">
-              +{business.itemsType.length - 3}
+          {itemTypes.length > visibleItemTypes.length && (
+            <Badge variant="outline">
+              +{itemTypes.length - visibleItemTypes.length} categorias
             </Badge>
           )}
+        </div>
+
+        <div className="mt-auto flex items-center justify-between pt-5">
+          <div className="text-xs text-muted-foreground">
+            {rating.count > 0
+              ? `${rating.count} avaliação${rating.count !== 1 ? "ões" : ""}`
+              : "Seja a primeira pessoa a avaliar"}
+          </div>
+
+          <Button size="sm" className="gap-2 rounded-full">
+            {whatsappAvailable ? (
+              <>
+                <MessageCircle className="h-4 w-4" />
+                Chamar
+              </>
+            ) : (
+              <>
+                Ver loja
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>
