@@ -133,7 +133,7 @@ export function BusinessDetail({
     >
       <SheetContent className="w-full overflow-y-auto p-0 sm:max-w-lg">
         <div className="relative">
-          <div className="relative h-64 bg-muted">
+          <div className="relative h-64 bg-muted/40">
             {allImages.length > 0 ? (
               allImages.map((image, index) => (
                 <img
@@ -142,7 +142,7 @@ export function BusinessDetail({
                   alt={business.name}
                   draggable={false}
                   fetchPriority={index === currentImageIndex ? "high" : "auto"}
-                  className={`absolute inset-0 h-full w-full select-none object-cover transition-opacity duration-200 ${
+                  className={`absolute inset-0 h-full w-full select-none object-contain p-4 transition-opacity duration-200 ${
                     index === currentImageIndex
                       ? "opacity-100"
                       : "pointer-events-none opacity-0"

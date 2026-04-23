@@ -1,12 +1,51 @@
-import { useMemo, useState } from "react";
-import { AlertCircle, Globe } from "lucide-react";
-import { useQuery } from "@apollo/client/react";
 import { BusinessCard } from "@/components/business/BusinessCard";
 import { BusinessDetail } from "@/components/business/BusinessDetail";
 import { BusinessSearchField } from "@/components/business/BusinessSearchField";
+import { Badge } from "@/components/ui/badge";
 import { getItemTypeSearchValue } from "@/lib/business/itemTypeLabels";
 import { Baazar } from "@/lib/graphql/generated";
 import { GET_ONLINE_BAAZARS } from "@/lib/graphql/queries/business";
+import { useQuery } from "@apollo/client/react";
+import { AlertCircle, Globe, MessageCircle, Search, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+
+function LoadingCards() {
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div
+          key={index}
+          className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm"
+        >
+          <div className="h-48 animate-pulse bg-muted" />
+          <div className="space-y-4 p-5">
+            <div className="h-5 w-2/3 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-full animate-pulse rounded bg-muted" />
+            <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+            <div className="flex gap-2">
+              <div className="h-7 w-20 animate-pulse rounded-full bg-muted" />
+              <div className="h-7 w-24 animate-pulse rounded-full bg-muted" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({ searchQuery }: { searchQuery: string }) {
+  return (
+    <div className="rounded-3xl border border-dashed border-border bg-card/70 px-6 py-14 text-center">
+      <Globe className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+      <h2 className="text-xl font-semibold">Nenhuma loja online encontrada</h2>
+      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+        {searchQuery
+          ? "Tente buscar por tipo de peça, nome da loja ou palavras como bolsas, vestidos e acessórios."
+          : "Ainda não encontramos lojinhas online publicadas. Volte em breve para ver novos achados."}
+      </p>
+    </div>
+  );
+}
 
 export default function OnlinePage() {
   const { loading, error, data } = useQuery<{ findAllOnlineBaazars: Baazar[] }>(
@@ -19,12 +58,11 @@ export default function OnlinePage() {
 
   const onlineBusinesses = useMemo(() => {
     const dataItems = data?.findAllOnlineBaazars || [];
+    const query = searchQuery.trim().toLowerCase();
+
+    if (!query) return dataItems;
 
     return dataItems.filter((business) => {
-      if (!searchQuery) return true;
-
-      const query = searchQuery.toLowerCase();
-
       return (
         business.name.toLowerCase().includes(query) ||
         (business.description || "").toLowerCase().includes(query) ||
@@ -41,80 +79,104 @@ export default function OnlinePage() {
   };
 
   return (
-    <div>
-      <section className="bg-transparent px-4 pb-4 pt-8">
-        <div className="container mx-auto text-center">
-          <h1 className="mb-2 text-3xl font-bold md:text-4xl">
-            Bazares e Brechós <span className="text-primary">online</span>
-          </h1>
-          <p className="mx-auto max-w-xl text-muted-foreground">
-            Compre de qualquer lugar do Brasil. Encontre os melhores brechós e
-            bazares que vendem online.
-          </p>
-        </div>
+    <div className="bg-transparent">
+      <section className="relative overflow-hidden px-4 py-10 md:py-14">
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.16),transparent_30rem),linear-gradient(180deg,hsl(var(--accent)/0.75),transparent)]" />
 
-        <div className="sticky z-40 pt-9">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <BusinessSearchField
-                value={searchQuery}
-                onChange={setSearchQuery}
-                inputClassName="max-w-lg"
-              />
+        <div className="container mx-auto">
+          <div className="mx-auto max-w-3xl text-center">
+            <Badge className="mb-4 rounded-full px-4 py-1.5" variant="secondary">
+              <Sparkles className="mr-2 h-4 w-4 text-primary" />
+              Brechós online com informação prática
+            </Badge>
+
+            <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
+              Compre de qualquer lugar com mais clareza sobre peças, preço e
+              contato
+            </h1>
+
+            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+              Veja lojas que vendem online com foco no que ajuda a decidir
+              rápido: faixa de preço, tipos de peças, avaliação, troca e canal
+              de contato.
+            </p>
+          </div>
+
+          <div className="mx-auto mt-8 max-w-2xl">
+            <BusinessSearchField
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Buscar por loja ou tipo de peça..."
+              inputClassName="h-12 rounded-full bg-card/95 pl-11 shadow-sm"
+            />
+          </div>
+
+          <div className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur">
+              <MessageCircle className="mb-2 h-5 w-5 text-primary" />
+              <p className="text-sm font-semibold">Contato mais rápido</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Priorize lojas com canal direto para tirar dúvidas.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur">
+              <Sparkles className="mb-2 h-5 w-5 text-primary" />
+              <p className="text-sm font-semibold">Preço e variedade</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Compare faixas de valor e tipos de peças sem sair da tela.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur">
+              <Globe className="mb-2 h-5 w-5 text-primary" />
+              <p className="text-sm font-semibold">Compra remota</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Ideal para quem quer praticidade e mais opções sem deslocamento.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 pb-12">
+        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Lojas online para garimpar</h2>
+            <p className="text-sm text-muted-foreground">
+              {loading
+                ? "Buscando lojinhas publicadas..."
+                : `${onlineBusinesses.length} lojinha${onlineBusinesses.length !== 1 ? "s" : ""} encontrada${onlineBusinesses.length !== 1 ? "s" : ""}`}
+            </p>
+          </div>
+          <p className="max-w-md text-sm text-muted-foreground">
+            Mantivemos o mesmo critério da home: informação objetiva para uma
+            escolha mais segura, prática e acessível.
+          </p>
+        </div>
+
         {error ? (
-          <div className="py-16 text-center">
-            <AlertCircle className="mx-auto mb-4 h-16 w-16 text-destructive" />
-            <h2 className="mb-2 text-xl font-semibold">
-              Erro ao carregar lojas online
-            </h2>
-            <p className="text-muted-foreground">
-              Não foi possível buscar os dados.
+          <div className="rounded-3xl border border-destructive/20 bg-destructive/5 px-6 py-14 text-center">
+            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-destructive" />
+            <h2 className="text-xl font-semibold">Não foi possível carregar as lojas</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Tente novamente em alguns instantes.
             </p>
           </div>
         ) : loading ? (
-          <div className="py-16 text-center">
-            <h2 className="mb-2 text-xl font-semibold">Carregando lojas...</h2>
-          </div>
-        ) : onlineBusinesses.length === 0 ? (
-          <div className="py-16 text-center">
-            <Globe className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-            <h2 className="mb-2 text-xl font-semibold">
-              Nenhum resultado encontrado
-            </h2>
-            <p className="text-muted-foreground">
-              Tente ajustar sua busca para encontrar mais opções.
-            </p>
+          <LoadingCards />
+        ) : onlineBusinesses.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {onlineBusinesses.map((business) => (
+              <BusinessCard
+                key={business.id}
+                business={business}
+                onClick={() => handleBusinessClick(business)}
+              />
+            ))}
           </div>
         ) : (
-          <>
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold">
-                {onlineBusinesses.length} lojinha
-                {onlineBusinesses.length !== 1 ? "s" : ""}
-              </h2>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {onlineBusinesses.map((business) => (
-                <BusinessCard
-                  key={business.id}
-                  business={{
-                    ...business,
-                    itemsType: business.itemsType || [],
-                    description: business.description || "",
-                  }}
-                  onClick={() => handleBusinessClick(business)}
-                />
-              ))}
-            </div>
-          </>
+          <EmptyState searchQuery={searchQuery} />
         )}
-      </div>
+      </main>
 
       <BusinessDetail
         business={selectedBusiness}
