@@ -100,11 +100,13 @@ export function BusinessCard({
         onClick={onClick}
       >
         <div className="flex gap-3 p-3">
-          <img
-            src={logoSrc}
-            alt={business.name}
-            className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
-          />
+          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg bg-muted/40 p-2">
+            <img
+              src={logoSrc}
+              alt={business.name}
+              className="h-full w-full rounded-md object-contain"
+            />
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <h3 className="truncate text-sm font-semibold">{business.name}</h3>
@@ -150,11 +152,11 @@ export function BusinessCard({
       className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border-border/60 bg-card transition-all hover:-translate-y-1 hover:shadow-xl"
       onClick={onClick}
     >
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden bg-muted/30">
         <img
           src={logoSrc}
           alt={business.name}
-          className="h-52 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="h-52 w-full object-contain p-4 transition-transform duration-300 group-hover:scale-[1.03]"
         />
 
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
