@@ -12,15 +12,14 @@ export const GET_LOCAL_BAAZARS = gql`
       address
       description
       images
+      isAcceptExchange
+      itemRenewal
       linkInstagram
       linkWhatsapp
       openingHours
       itemsType
-      locationMap {
-        id
-        latitude
-        longitude
-      }
+      responsiblePerson
+      storeSize
     }
   }
 `;
@@ -37,15 +36,14 @@ export const GET_ONLINE_BAAZARS = gql`
       address
       description
       images
+      isAcceptExchange
+      itemRenewal
       linkInstagram
       linkWhatsapp
       openingHours
       itemsType
-      locationMap {
-        id
-        latitude
-        longitude
-      }
+      responsiblePerson
+      storeSize
     }
   }
 `;

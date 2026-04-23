@@ -1,53 +1,48 @@
 import { BusinessCard } from "@/components/business/BusinessCard";
 import { BusinessDetail } from "@/components/business/BusinessDetail";
 import { BusinessSearchField } from "@/components/business/BusinessSearchField";
-import { BusinessMap } from "@/components/map/BusinessMap";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { appConfig } from "@/config/app.config";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { Badge } from "@/components/ui/badge";
 import { getItemTypeSearchValue } from "@/lib/business/itemTypeLabels";
 import { Baazar } from "@/lib/graphql/generated";
 import { GET_LOCAL_BAAZARS } from "@/lib/graphql/queries/business";
 import { useQuery } from "@apollo/client/react";
-import { List, Loader2, MapPin } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { AlertCircle, HandHeart, Search, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
 
-function LoadingPanel({ message }: { message: string }) {
+function LoadingCards() {
   return (
-    <div className="flex h-full min-h-[280px] items-center justify-center rounded-lg border border-border/60 bg-muted/30 px-6 text-center">
-      <div className="space-y-3">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div
+          key={index}
+          className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm"
+        >
+          <div className="h-48 animate-pulse bg-muted" />
+          <div className="space-y-4 p-5">
+            <div className="h-5 w-2/3 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-full animate-pulse rounded bg-muted" />
+            <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+            <div className="flex gap-2">
+              <div className="h-7 w-20 animate-pulse rounded-full bg-muted" />
+              <div className="h-7 w-24 animate-pulse rounded-full bg-muted" />
+            </div>
+          </div>
         </div>
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Buscando lojas</p>
-          <p className="text-sm text-muted-foreground">{message}</p>
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
 
-function LoadingCards() {
+function EmptyState({ searchQuery }: { searchQuery: string }) {
   return (
-    <div className="space-y-3">
-      {Array.from({ length: 3 }).map((_, index) => (
-        <div
-          key={index}
-          className="rounded-2xl border border-border/60 bg-background p-4 shadow-sm"
-        >
-          <div className="animate-pulse space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-xl bg-muted" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-2/3 rounded bg-muted" />
-                <div className="h-3 w-1/2 rounded bg-muted" />
-              </div>
-            </div>
-            <div className="h-3 w-1/3 rounded bg-muted" />
-          </div>
-        </div>
-      ))}
+    <div className="rounded-3xl border border-dashed border-border bg-card/70 px-6 py-14 text-center">
+      <Search className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+      <h2 className="text-xl font-semibold">Nenhuma lojinha encontrada</h2>
+      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+        {searchQuery
+          ? "Tente buscar por bairro, nome da loja ou tipo de peça, como vestidos, bolsas ou sapatos."
+          : "Ainda não encontramos lojas locais publicadas. Volte em breve para ver novos achados."}
+      </p>
     </div>
   );
 }
@@ -57,20 +52,9 @@ export default function HomePage() {
     GET_LOCAL_BAAZARS,
   );
 
-  const {
-    latitude,
-    longitude,
-    loading: geoLoading,
-    error: geoError,
-  } = useGeolocation();
-
-  const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [selectedBusiness, setSelectedBusiness] = useState<Baazar | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [userLocationLabel, setUserLocationLabel] = useState<string>(
-    `${appConfig.defaultLocation.city}, ${appConfig.defaultLocation.state}`,
-  );
 
   const physicalBusinesses = useMemo(() => {
     const dataItems = data?.findAllLocalBaazars || [];
@@ -78,9 +62,8 @@ export default function HomePage() {
   }, [data]);
 
   const filteredBusinesses = useMemo(() => {
-    if (!searchQuery.trim()) return physicalBusinesses;
-
     const query = searchQuery.trim().toLowerCase();
+    if (!query) return physicalBusinesses;
 
     return physicalBusinesses.filter((business) => {
       return (
@@ -99,205 +82,105 @@ export default function HomePage() {
     setDetailOpen(true);
   };
 
-  useEffect(() => {
-    if (geoLoading) return;
-
-    const controller = new AbortController();
-
-    const setLocationFromAddress = (address?: Record<string, string>) => {
-      if (!address) return;
-
-      const city =
-        address.city ||
-        address.town ||
-        address.village ||
-        address.municipality ||
-        address.county;
-      const state = address.state_code || address.region_code || address.state;
-
-      if (!city && !state) return;
-      setUserLocationLabel([city, state].filter(Boolean).join(", "));
-    };
-
-    const resolveUserLocation = async () => {
-      try {
-        if (geoError) {
-          const ipResponse = await fetch("https://ipapi.co/json/", {
-            signal: controller.signal,
-          });
-          if (!ipResponse.ok) return;
-
-          const ipData = await ipResponse.json();
-          const city = ipData?.city;
-          const state = ipData?.region_code || ipData?.region;
-
-          if (!city && !state) return;
-          setUserLocationLabel([city, state].filter(Boolean).join(", "));
-          return;
-        }
-
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=pt-BR`,
-          { signal: controller.signal },
-        );
-
-        if (!response.ok) return;
-
-        const locationData = await response.json();
-        setLocationFromAddress(locationData?.address);
-      } catch {
-        // mantém fallback configurado no appConfig
-      }
-    };
-
-    void resolveUserLocation();
-
-    return () => controller.abort();
-  }, [geoError, geoLoading, latitude, longitude]);
-
-  const hasBusinesses = filteredBusinesses.length > 0;
-
   return (
-    <div className="bg-transparent lg:flex lg:h-[calc(100dvh-4rem)] lg:min-h-0 lg:flex-col lg:overflow-hidden">
-      <section className="bg-transparent px-4 pt-6 lg:shrink-0 lg:pb-2 lg:pt-3 md:pt-8">
-        <div className="container mx-auto text-center">
-          <h1 className="mb-2 text-3xl font-bold md:text-4xl">
-            Descubra <span className="text-primary">achados únicos</span> perto
-            de você
-          </h1>
+    <div className="bg-transparent">
+      <section className="relative overflow-hidden px-4 py-10 md:py-14">
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_32rem),linear-gradient(180deg,hsl(var(--accent)/0.8),transparent)]" />
 
-          <div className="mt-3 flex items-center justify-center gap-2 text-sm">
-            {geoLoading ? (
-              <div className="flex gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Obtendo sua localização...</span>
-              </div>
-            ) : geoError ? (
-              <div className="flex gap-2 text-muted-foreground">
-                <span>Usando localização padrão: {userLocationLabel}</span>
-              </div>
-            ) : (
-              <div className="flex gap-2 text-primary">
-                <span>Resultados próximos de: {userLocationLabel}</span>
-              </div>
-            )}
+        <div className="container mx-auto">
+          <div className="mx-auto max-w-3xl text-center">
+            <Badge className="mb-4 rounded-full px-4 py-1.5" variant="secondary">
+              <Sparkles className="mr-2 h-4 w-4 text-primary" />
+              Garimpos reais, preços possíveis
+            </Badge>
+
+            <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
+              Encontre brechós acolhedores para renovar o guarda-roupa sem
+              pesar no bolso
+            </h1>
+
+            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+              Veja lojas locais com preço médio, tipos de peças, endereço,
+              horários e contato rápido para combinar sua visita com mais
+              segurança.
+            </p>
           </div>
 
-          <div className="container mx-auto px-4 pt-6 lg:pt-2">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-8">
-              <BusinessSearchField
-                value={searchQuery}
-                onChange={setSearchQuery}
-                inputClassName="max-w-lg"
-              />
-              <Tabs
-                value={viewMode}
-                onValueChange={(value) => setViewMode(value as "map" | "list")}
-              >
-                <TabsList className="grid w-[160px] grid-cols-2">
-                  <TabsTrigger value="map" className="gap-1">
-                    <MapPin className="h-4 w-4" />
-                    Mapa
-                  </TabsTrigger>
-                  <TabsTrigger value="list" className="gap-1">
-                    <List className="h-4 w-4" />
-                    Lista
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+          <div className="mx-auto mt-8 max-w-2xl">
+            <BusinessSearchField
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Buscar por loja, bairro ou tipo de peça..."
+              inputClassName="h-12 rounded-full bg-card/95 pl-11 shadow-sm"
+            />
+          </div>
+
+          <div className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur">
+              <HandHeart className="mb-2 h-5 w-5 text-primary" />
+              <p className="text-sm font-semibold">Compra com calma</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Informações úteis antes de chamar ou visitar.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur">
+              <Sparkles className="mb-2 h-5 w-5 text-primary" />
+              <p className="text-sm font-semibold">Achados acessíveis</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Destaque para preço médio e variedade de peças.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur">
+              <Search className="mb-2 h-5 w-5 text-primary" />
+              <p className="text-sm font-semibold">Busca simples</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Encontre por bairro, nome ou categoria.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 pb-5 pt-2 lg:min-h-0 lg:flex-1 lg:pb-3">
-        {viewMode === "map" ? (
-          <div className="grid h-full gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="h-[68dvh] min-h-[320px] overflow-hidden rounded-lg shadow-lg sm:h-[70dvh] lg:h-full lg:min-h-0">
-              {loading ? (
-                <LoadingPanel message="Carregando os pontos no mapa para você." />
-              ) : (
-                <BusinessMap
-                  businesses={filteredBusinesses}
-                  center={{ lat: latitude, lng: longitude }}
-                  onBusinessClick={handleBusinessClick}
-                  selectedBusinessId={selectedBusiness?.id}
-                  showUserLocation={!geoLoading && !geoError}
-                  userLocation={
-                    !geoLoading && !geoError
-                      ? { lat: latitude, lng: longitude }
-                      : null
-                  }
-                  className="min-h-0"
-                />
-              )}
-            </div>
+      <main className="container mx-auto px-4 pb-12">
+          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Lojas para conhecer</h2>
+            <p className="text-sm text-muted-foreground">
+              {loading
+                ? "Buscando lojinhas publicadas..."
+                : `${filteredBusinesses.length} lojinha${filteredBusinesses.length !== 1 ? "s" : ""} encontrada${filteredBusinesses.length !== 1 ? "s" : ""}`}
+            </p>
+          </div>
+          <p className="max-w-md text-sm text-muted-foreground">
+            Priorizamos detalhes que ajudam a decidir rápido: preço, peças,
+            localização, horários e formas de contato.
+          </p>
+        </div>
 
-            <div className="space-y-4 lg:max-h-full lg:overflow-y-auto lg:pr-1">
-              <div className="flex items-center justify-between">
-                <h2 className="font-semibold">
-                  {loading
-                    ? "Buscando lojas..."
-                    : `${filteredBusinesses.length} lojinha${filteredBusinesses.length !== 1 ? "s" : ""} encontrada${filteredBusinesses.length !== 1 ? "s" : ""}`}
-                </h2>
-              </div>
-              {loading ? (
-                <LoadingCards />
-              ) : error ? (
-                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-muted-foreground">
-                  Não foi possível carregar as lojas agora.
-                </div>
-              ) : hasBusinesses ? (
-                <div className="space-y-3">
-                  {filteredBusinesses.map((business) => (
-                    <BusinessCard
-                      key={business.id}
-                      business={business}
-                      variant="compact"
-                      onClick={() => handleBusinessClick(business)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
-                  Nenhuma loja local foi encontrada no momento.
-                </div>
-              )}
-            </div>
+        {error ? (
+          <div className="rounded-3xl border border-destructive/20 bg-destructive/5 px-6 py-14 text-center">
+            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-destructive" />
+            <h2 className="text-xl font-semibold">Não foi possível carregar as lojas</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Tente novamente em alguns instantes.
+            </p>
+          </div>
+        ) : loading ? (
+          <LoadingCards />
+        ) : filteredBusinesses.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredBusinesses.map((business) => (
+              <BusinessCard
+                key={business.id}
+                business={business}
+                onClick={() => handleBusinessClick(business)}
+              />
+            ))}
           </div>
         ) : (
-          <div className="space-y-6 lg:h-full lg:overflow-y-auto lg:pr-1">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
-                {loading
-                  ? "Buscando lojas..."
-                  : `${filteredBusinesses.length} lojinha${filteredBusinesses.length !== 1 ? "s" : ""} encontrada${filteredBusinesses.length !== 1 ? "s" : ""}`}
-              </h2>
-            </div>
-            {loading ? (
-              <LoadingCards />
-            ) : error ? (
-              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-muted-foreground">
-                Não foi possível carregar as lojas agora.
-              </div>
-            ) : hasBusinesses ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-                {filteredBusinesses.map((business) => (
-                  <BusinessCard
-                    key={business.id}
-                    business={business}
-                    onClick={() => handleBusinessClick(business)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-lg border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
-                Nenhuma loja local foi encontrada no momento.
-              </div>
-            )}
-          </div>
+          <EmptyState searchQuery={searchQuery} />
         )}
-      </div>
+      </main>
 
       <BusinessDetail
         business={selectedBusiness}
