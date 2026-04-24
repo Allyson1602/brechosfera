@@ -1,6 +1,64 @@
 # Agent Instructions - Brechosfera Frontend
 
 You are a senior engineer working on the Brechosfera frontend. Communicate with the user in Brazilian Portuguese unless asked otherwise, but keep this instruction file in English. Generate production-ready, simple, accessible, responsive code that follows the patterns already present in this repository.
+When creating Brechosfera UI, optimize for product discovery, trust, affordability, and inclusive self-expression. The interface should help users quickly understand: what the item is, how much it costs, whether it fits, its condition, where it is, and why it is worth buying.
+
+## Brechosfera UX/UI Audience Strategy
+
+The Brechosfera frontend should primarily serve these audience segments:
+
+1. Women aged 18–35, class C/B-
+   - Main audience for discovery, recurrence, and social sharing.
+   - Prioritize visual browsing, outfit inspiration, price clarity, size filters, condition labels, and easy saving/favoriting.
+
+2. LGBTQIA+ urban audience aged 18–40, class C+/B
+   - Values identity expression, uniqueness, vintage pieces, creative styling, and inclusive language.
+   - Use inclusive copy without over-forcing identity references.
+
+3. Economical consumers, class C/D
+   - Highly price-sensitive and practical.
+   - Prioritize price, discounts, distance/location, condition, measurements, delivery/pickup options, and trust signals.
+   - UX must be simple, direct, lightweight, and mobile-first.
+
+4. Middle-class brand seekers, class B/B+
+   - Looks for known brands, quality, semi-new condition, and good deals.
+   - Highlight brand, original price comparison when available, conservation status, authenticity cues, and high-quality photos.
+
+5. Resellers
+   - Look for margin, lots, bundles, underpriced pieces, and fast filtering.
+   - Support filters by price range, category, brand, condition, location, and recently added items.
+
+## UX Principles for Brechosfera
+
+- Mobile-first. Most users should be able to browse, filter, favorite, and contact sellers comfortably on small screens.
+- Prioritize image-led discovery with clear price, size, condition, and location.
+- Make filtering prominent: size, price, category, brand, condition, style, color, location, and gender expression.
+- Avoid overly luxurious UI. The brand should feel accessible, stylish, sustainable, and trustworthy.
+- Use friendly Brazilian Portuguese with clear labels and no technical jargon.
+- Support inclusive browsing:
+  - Do not force binary gender navigation as the only path.
+  - Prefer "categorias", "estilos", "tamanhos", and "ocasiões" as primary discovery paths.
+  - When gender filters exist, include neutral/non-gendered options.
+- Use trust-building UI:
+  - Seller rating or verification when available.
+  - Product condition labels.
+  - Clear photos.
+  - Return/exchange policy when applicable.
+  - Pickup/delivery information.
+- Empty states should guide action:
+  - Suggest changing filters.
+  - Show nearby alternatives.
+  - Recommend similar styles or lower price ranges.
+
+## Visual Direction
+
+- The UI should feel:
+  - modern
+  - accessible
+  - colorful but not childish
+  - thrift/vintage-inspired
+  - inclusive
+  - low-friction
 
 ## Encoding
 
@@ -141,3 +199,4 @@ You are a senior engineer working on the Brechosfera frontend. Communicate with 
 - Do not alter `node_modules`, `dist`, public assets, or real environment files without an explicit request.
 - If a change depends on a new backend contract, align with `api-brechosfera` and keep field names consistent with the GraphQL schema.
 - When creating a visual screen or component, deliver polished UI with clear hierarchy, visual states, and responsive behavior.
+
