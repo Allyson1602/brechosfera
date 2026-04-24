@@ -20,6 +20,7 @@ import {
   RefreshCcw,
   Shirt,
   Star,
+  Store,
   Wallet,
 } from "lucide-react";
 
@@ -77,6 +78,16 @@ function hasWhatsapp(value: unknown) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function getBusinessInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+}
+
 export function BusinessCard({
   business,
   onClick,
@@ -96,20 +107,27 @@ export function BusinessCard({
   if (variant === "compact") {
     return (
       <Card
-        className="cursor-pointer overflow-hidden border-border/50 transition-all hover:-translate-y-1 hover:shadow-lg"
+        className="cursor-pointer overflow-hidden rounded-2xl border-border/50 transition-all hover:-translate-y-1 hover:shadow-lg"
         onClick={onClick}
       >
-        <div className="flex gap-3 p-3">
-          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg bg-muted/40 p-2">
-            <img
-              src={logoSrc}
-              alt={business.name}
-              className="h-full w-full rounded-md object-contain"
-            />
+        <div className="flex gap-3 p-3.5">
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-card p-2 shadow-sm">
+            {logoSrc ? (
+              <img
+                src={logoSrc}
+                alt={business.name}
+                className="h-full w-full rounded-xl object-contain"
+              />
+            ) : (
+              <Store className="h-6 w-6 text-primary" aria-hidden="true" />
+            )}
           </div>
+
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="truncate text-sm font-semibold">{business.name}</h3>
+              <h3 className="truncate text-sm font-semibold">
+                {business.name}
+              </h3>
               {rating.count > 0 && (
                 <span className="flex items-center gap-1 text-xs font-medium">
                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
@@ -128,7 +146,7 @@ export function BusinessCard({
             </div>
 
             <div className="mt-2 flex flex-wrap gap-1">
-              <Badge variant="secondary" className="text-[11px]">
+              <Badge className="bg-primary/10 text-[11px] text-primary hover:bg-primary/15">
                 {priceLabel}
               </Badge>
               {visibleItemTypes.map((item) => (
@@ -152,43 +170,20 @@ export function BusinessCard({
       className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border-border/60 bg-card transition-all hover:-translate-y-1 hover:shadow-xl"
       onClick={onClick}
     >
-      <div className="relative overflow-hidden bg-muted/30">
-        <img
-          src={logoSrc}
-          alt={business.name}
-          className="h-52 w-full object-contain p-4 transition-transform duration-300 group-hover:scale-[1.03]"
-        />
-
-        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-          <Badge className="rounded-full bg-card/90 text-foreground shadow-sm backdrop-blur">
-            <Wallet className="mr-1 h-3 w-3 text-primary" />
-            {priceLabel}
-          </Badge>
-
-          {business.isAcceptExchange && (
-            <Badge className="rounded-full bg-primary/90 text-primary-foreground shadow-sm backdrop-blur">
-              <RefreshCcw className="mr-1 h-3 w-3" />
-              Aceita troca
+      <div className="relative overflow-hidden border-b border-border/50 bg-gradient-to-br from-accent via-card to-muted/40 px-5 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <Badge className="mb-3 rounded-full bg-card/90 text-foreground shadow-sm backdrop-blur hover:bg-card">
+              {business.isOnline ? (
+                <Globe className="mr-1 h-3 w-3 text-primary" />
+              ) : (
+                <MapPin className="mr-1 h-3 w-3 text-primary" />
+              )}
+              {business.isOnline ? "Loja online" : "Loja local"}
             </Badge>
-          )}
-        </div>
-
-        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-card/90 px-2.5 py-1 text-sm font-semibold shadow-sm backdrop-blur">
-          <Star
-            className={
-              rating.count > 0
-                ? "h-4 w-4 fill-yellow-400 text-yellow-400"
-                : "h-4 w-4 text-muted-foreground"
-            }
-          />
-          <span>{rating.count > 0 ? rating.rating : "Novo"}</span>
-        </div>
-      </div>
-
-      <CardContent className="flex flex-1 flex-col p-5">
-        <div className="space-y-2">
-          <div>
-            <h3 className="line-clamp-1 text-xl font-bold">{business.name}</h3>
+            <h3 className="line-clamp-2 text-xl font-extrabold leading-tight">
+              {business.name}
+            </h3>
             <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
               {business.isOnline ? (
                 <Globe className="h-4 w-4 flex-shrink-0 text-primary" />
@@ -199,6 +194,51 @@ export function BusinessCard({
             </p>
           </div>
 
+          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-card p-2.5 shadow-md transition-transform duration-300 group-hover:scale-[1.03]">
+            {logoSrc ? (
+              <img
+                src={logoSrc}
+                alt={business.name}
+                className="h-full w-full rounded-xl object-contain"
+              />
+            ) : (
+              <span className="text-lg font-extrabold text-primary">
+                {getBusinessInitials(business.name)}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Badge className="rounded-full bg-primary text-primary-foreground shadow-sm">
+            <Wallet className="mr-1 h-3 w-3" />
+            {priceLabel}
+          </Badge>
+
+          <Badge className="rounded-full bg-card/90 text-foreground shadow-sm backdrop-blur hover:bg-card">
+            <Star
+              className={
+                rating.count > 0
+                  ? "mr-1 h-3 w-3 fill-yellow-400 text-yellow-400"
+                  : "mr-1 h-3 w-3 text-primary"
+              }
+            />
+            {rating.count > 0
+              ? `${rating.rating} (${rating.count})`
+              : "Loja nova"}
+          </Badge>
+
+          {business.isAcceptExchange && (
+            <Badge className="rounded-full bg-secondary text-secondary-foreground shadow-sm">
+              <RefreshCcw className="mr-1 h-3 w-3" />
+              Aceita troca
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      <CardContent className="flex flex-1 flex-col p-5">
+        <div className="space-y-2">
           <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
             {business.description ||
               "Loja cadastrada na Brechosfera com peças para garimpar sem pressa."}
