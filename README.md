@@ -1,8 +1,13 @@
+## Melhorias
+
+- Destaque de peças de roupas por estilo, destacando for feriado, estilo... (como rock, natal, pascoa, natacao, profissao, etc)
+
 # Brechosfera Frontend
 
 ## Setup local
 
 Requisitos:
+
 - Node.js 18+
 - npm ou pnpm
 
