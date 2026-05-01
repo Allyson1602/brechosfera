@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { calculateRating } from "@/helpers/calculateRating";
-import { parseAddress } from "@/helpers/parseAddress";
 import { getItemTypeLabel } from "@/lib/business/itemTypeLabels";
 import {
   Baazar,
@@ -58,16 +57,11 @@ function formatCurrency(value?: number | null) {
 function getAddressLabel(address?: string | null) {
   if (!address) return "Endereço não informado";
 
-  const parsedAddress = parseAddress(address);
-  const shortAddress = [parsedAddress.neighborhood, parsedAddress.city]
-    .filter(Boolean)
-    .join(", ");
-
-  return shortAddress || address;
+  return address.trim();
 }
 
-function getFirstOpeningHour(openingHours?: string[]) {
-  return openingHours?.find((hour) => hour.trim().length > 0);
+function getOpeningHours(openingHours?: string[]) {
+  return openingHours?.filter((hour) => hour.trim().length > 0) ?? [];
 }
 
 function hasWhatsapp(value: unknown) {
@@ -98,7 +92,8 @@ export function BusinessCard({
   const addressLabel = business.isOnline
     ? "Atendimento online"
     : getAddressLabel(business.address);
-  const firstOpeningHour = getFirstOpeningHour(business.openingHours);
+  const openingHours = getOpeningHours(business.openingHours);
+  const firstOpeningHour = openingHours[0];
   const itemTypes = business.itemsType ?? [];
   const visibleItemTypes = itemTypes.slice(0, variant === "compact" ? 2 : 4);
   const priceLabel = formatCurrency(business.averagePrice);
@@ -142,7 +137,7 @@ export function BusinessCard({
               ) : (
                 <MapPin className="h-3 w-3" />
               )}
-              <span className="truncate">{addressLabel}</span>
+              <span className="line-clamp-2 min-w-0">{addressLabel}</span>
             </div>
 
             <div className="mt-2 flex flex-wrap gap-1">
@@ -170,12 +165,13 @@ export function BusinessCard({
       className="flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border-border/60 bg-card transition-all hover:-translate-y-1 hover:shadow-xl"
       onClick={onClick}
     >
-      <div className="relative overflow-hidden border-b border-border/50 bg-gradient-to-br from-accent via-card to-muted/40 px-5 py-4">
+      <div className="relative overflow-hidden border-b border-border/50 bg-gradient-to-br from-accent via-card to-secondary/10 px-5 py-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="line-clamp-2 text-xl font-extrabold leading-tight">
               {business.name}
             </h3>
+
             <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
               {business.isOnline ? (
                 <Globe className="h-4 w-4 flex-shrink-0 text-primary" />
@@ -184,6 +180,12 @@ export function BusinessCard({
               )}
               <span className="truncate">{addressLabel}</span>
             </p>
+
+            {business.description && (
+              <p className="font-hand line-clamp-2 text-lg leading-6 text-gray-600 pt-2">
+                {business.description}
+              </p>
+            )}
           </div>
 
           <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-card p-0.5 shadow-md">
@@ -202,45 +204,25 @@ export function BusinessCard({
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <Badge className="rounded-full bg-primary text-primary-foreground shadow-sm">
+          <Badge className="rounded-full bg-rose-100 border border-rose-300 text-rose-500 shadow-sm hover:bg-rose-100">
             <Wallet className="mr-1 h-3 w-3" />
             {priceLabel}
           </Badge>
 
-          <Badge className="rounded-full bg-card/90 text-foreground shadow-sm backdrop-blur hover:bg-card">
-            <Star
-              className={
-                rating.count > 0
-                  ? "mr-1 h-3 w-3 fill-yellow-400 text-yellow-400"
-                  : "mr-1 h-3 w-3 text-primary"
-              }
-            />
-            {rating.count > 0
-              ? `${rating.rating} (${rating.count})`
-              : "Loja nova"}
-          </Badge>
-
           {business.isAcceptExchange && (
-            <Badge className="rounded-full bg-secondary text-secondary-foreground shadow-sm">
-              <RefreshCcw className="mr-1 h-3 w-3" />
+            <Badge className="rounded-full border-secondary/20 bg-secondary/10 text-secondary shadow-sm hover:bg-secondary/15">
+              <RefreshCcw className="mr-1 h-3 w-3 text-secondary" />
               Aceita troca
             </Badge>
           )}
         </div>
       </div>
 
-      <CardContent className="flex flex-1 flex-col p-5">
-        <div className="space-y-2">
-          <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
-            {business.description ||
-              "Loja cadastrada na Brechosfera com peças para garimpar sem pressa."}
-          </p>
-        </div>
-
-        <div className="mt-4 grid gap-2 text-sm">
-          <div className="flex items-center gap-2 rounded-2xl bg-muted/50 px-3 py-2">
-            <Shirt className="h-4 w-4 flex-shrink-0 text-primary" />
-            <span className="truncate">
+      <CardContent className="flex flex-1 flex-col p-3 gap-4">
+        <div className="divide-y divide-border/60 rounded-2xl bg-card/70 px-3 text-sm text-muted-foreground">
+          <div className="flex items-start gap-2 py-2.5">
+            <Shirt className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+            <span className="min-w-0 break-words">
               {visibleItemTypes.length > 0
                 ? visibleItemTypes
                     .map((item) => getItemTypeLabel(item))
@@ -249,14 +231,25 @@ export function BusinessCard({
             </span>
           </div>
 
-          <div className="flex items-center gap-2 rounded-2xl bg-muted/50 px-3 py-2">
-            <Clock className="h-4 w-4 flex-shrink-0 text-primary" />
-            <span className="truncate">
+          <div className="flex items-start gap-2 py-2.5">
+            <Clock className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+            <div className="min-w-0 space-y-1">
+              {openingHours.length > 0 ? (
+                openingHours.map((hour) => (
+                  <p key={hour} className="break-words leading-snug">
+                    {hour}
+                  </p>
+                ))
+              ) : (
+                <span>Horário sob consulta</span>
+              )}
+            </div>
+            <span className="hidden">
               {firstOpeningHour || "Horário sob consulta"}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 rounded-2xl bg-muted/50 px-3 py-2">
+          <div className="flex items-center gap-2 py-2.5">
             <HandHeart className="h-4 w-4 flex-shrink-0 text-primary" />
             <span className="truncate">
               {RENEWAL_LABELS[business.itemRenewal] ||
@@ -266,24 +259,19 @@ export function BusinessCard({
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {visibleItemTypes.map((item) => (
-            <Badge key={getItemTypeLabel(item)} variant="outline">
-              {getItemTypeLabel(item)}
-            </Badge>
-          ))}
-          {itemTypes.length > visibleItemTypes.length && (
-            <Badge variant="outline">
-              +{itemTypes.length - visibleItemTypes.length} categorias
-            </Badge>
-          )}
-        </div>
-
-        <div className="mt-auto flex items-center justify-between pt-5">
-          <div className="text-xs text-muted-foreground">
-            {rating.count > 0
-              ? `${rating.count} avaliação${rating.count !== 1 ? "ões" : ""}`
-              : "Seja a primeira pessoa a avaliar"}
+        <div className="mt-auto flex items-center justify-between pt-1">
+          <div className="min-w-0 flex items-center gap-1.5 text-xs text-muted-foreground">
+            {rating.count > 0 ? (
+              <>
+                <Star className="h-3.5 w-3.5 flex-shrink-0 fill-yellow-400 text-yellow-400" />
+                <span className="truncate">
+                  Nota {rating.rating} • {rating.count} avaliaç
+                  {rating.count !== 1 ? "ões" : "ão"}
+                </span>
+              </>
+            ) : (
+              "Seja a primeira pessoa a avaliar"
+            )}
           </div>
 
           <Button size="sm" className="gap-2 rounded-full">
