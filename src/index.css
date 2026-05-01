@@ -180,6 +180,20 @@ All colors MUST be HSL.
     scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track));
   }
 
+  html body[data-scroll-locked]:has(.brechosfera-select-content) {
+    overflow-y: scroll !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  html body[data-scroll-locked]:has(.brechosfera-select-content) .right-scroll-bar-position {
+    right: 0 !important;
+  }
+
+  html body[data-scroll-locked]:has(.brechosfera-select-content) .width-before-scroll-bar {
+    margin-right: 0 !important;
+  }
+
   * {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track));
