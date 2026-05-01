@@ -161,19 +161,19 @@ export function BusinessDetail({
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-card/40 backdrop-blur-sm"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/70 text-secondary shadow-sm backdrop-blur-sm hover:bg-background/85"
                   onClick={prevImage}
                 >
-                  <ChevronLeft className="h-4 w-4" color="#000" />
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
 
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-card/40 backdrop-blur-sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/70 text-secondary shadow-sm backdrop-blur-sm hover:bg-background/85"
                   onClick={nextImage}
                 >
-                  <ChevronRight className="h-4 w-4" color="#000" />
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
 
                 <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
@@ -182,7 +182,7 @@ export function BusinessDetail({
                       key={index}
                       className={`h-2 w-2 rounded-full transition-colors ${
                         index === currentImageIndex
-                          ? "bg-primary"
+                          ? "bg-secondary"
                           : "bg-card/60"
                       }`}
                       onClick={() => setCurrentImageIndex(index)}
@@ -195,10 +195,10 @@ export function BusinessDetail({
             <Button
               variant="secondary"
               size="icon"
-              className="absolute right-3 top-3 rounded-full bg-card/40 backdrop-blur-sm"
+              className="absolute right-3 top-3 rounded-full bg-background/70 text-secondary shadow-sm backdrop-blur-sm hover:bg-background/85"
               onClick={onClose}
             >
-              <X className="h-4 w-4" color="#000" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
 

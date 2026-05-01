@@ -2,6 +2,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,8 +25,8 @@ All colors MUST be HSL.
     --primary: 333 71% 50%;
     --primary-foreground: 327 73% 97%;
 
-    --secondary: 240 5% 33%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 203 100% 41%;
+    --secondary-foreground: 240 5% 10%;
 
     --muted: 240 4% 83%;
     --muted-foreground: 240 5% 10%;
@@ -50,9 +51,9 @@ All colors MUST be HSL.
 
     --sidebar-primary-foreground: 327 73% 97%;
 
-    --sidebar-accent: 240 5% 33%;
+    --sidebar-accent: 203 100% 41%;
 
-    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-accent-foreground: 240 5% 10%;
 
     --sidebar-border: 240 4% 83%;
 

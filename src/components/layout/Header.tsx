@@ -15,7 +15,7 @@ import { appConfig } from "@/config/app.config";
 import logoImg from "@/lib/assets/images/logo.png";
 
 const navLinks = [
-  { to: "/", label: "Mapa", icon: MapPin },
+  { to: "/", label: "Local", icon: MapPin },
   { to: "/online", label: "Online", icon: Globe },
   { to: "/eventos", label: "Eventos", icon: Calendar },
   { to: "/cadastrar", label: "Cadastrar", icon: PlusCircle },
@@ -26,7 +26,7 @@ export function Header() {
   const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-none bg-transparent shadow-none backdrop-blur-none">
+    <header className="sticky top-0 z-50 w-full border-none bg-pink-100/20 shadow-none backdrop-blur-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

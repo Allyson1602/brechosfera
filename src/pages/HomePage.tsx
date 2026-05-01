@@ -29,12 +29,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-type PriceFilter =
-  | "all"
-  | "up-to-50"
-  | "50-to-100"
-  | "100-to-200"
-  | "over-200";
+type PriceFilter = "all" | "up-to-50" | "50-to-100" | "100-to-200" | "over-200";
 type RatingFilter = "all" | "reviewed" | "high-rated";
 type StoreInfoFilter =
   | "all"
@@ -206,7 +201,7 @@ export default function HomePage() {
         <div className="container mx-auto">
           <div className="mx-auto max-w-4xl text-center">
             <Badge className="rounded-full px-4 py-1.5" variant="secondary">
-              <Sparkles className="mr-2 h-4 w-4 text-primary" />
+              <Sparkles className="mr-2 h-4 w-4 text-secondary" />
               Garimpos reais, preços possíveis
             </Badge>
 
@@ -249,19 +244,8 @@ export default function HomePage() {
       </section>
 
       <main className="container mx-auto px-4 pb-12">
-        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Lojas para conhecer</h2>
-            <p className="text-sm text-muted-foreground">
-              {loading
-                ? "Buscando lojinhas publicadas..."
-                : `${filteredBusinesses.length} lojinha${filteredBusinesses.length !== 1 ? "s" : ""} encontrada${filteredBusinesses.length !== 1 ? "s" : ""}`}
-            </p>
-          </div>
-          <p className="max-w-md text-sm text-muted-foreground">
-            Priorizamos detalhes que ajudam a decidir rápido: preço, peças,
-            localização, horários e formas de contato.
-          </p>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">Lojas para conhecer</h2>
         </div>
 
         <div className="mb-6 rounded-3xl border border-border/60 bg-card/85 p-4 shadow-sm backdrop-blur">
@@ -407,3 +391,4 @@ export default function HomePage() {
     </div>
   );
 }
+

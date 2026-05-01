@@ -229,7 +229,7 @@ export default function EventsPage() {
         <div className="container mx-auto">
           <div className="mx-auto max-w-3xl text-center">
             <Badge className="mb-4 rounded-full px-4 py-1.5" variant="secondary">
-              <Sparkles className="mr-2 h-4 w-4 text-primary" />
+              <Sparkles className="mr-2 h-4 w-4 text-secondary" />
               Encontros para garimpar com mais planejamento
             </Badge>
 

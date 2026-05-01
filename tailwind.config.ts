@@ -131,6 +131,10 @@ export default {
       brand: [
         'Great Vibes',
         'cursive'
+      ],
+      hand: [
+        'Caveat',
+        'cursive'
       ]
   		}
   	}
