@@ -150,7 +150,7 @@ export function BusinessDetail({
                   src={image}
                   alt={business.name}
                   draggable={false}
-                  fetchPriority={index === currentImageIndex ? "high" : "auto"}
+                  fetchpriority={index === currentImageIndex ? "high" : "auto"}
                   className={`absolute inset-0 h-full w-full select-none object-contain p-4 transition-opacity duration-200 ${
                     index === currentImageIndex
                       ? "cursor-zoom-in opacity-100"

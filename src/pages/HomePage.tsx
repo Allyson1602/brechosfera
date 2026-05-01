@@ -30,7 +30,7 @@ import {
 import { useMemo, useState } from "react";
 
 type PriceFilter = "all" | "up-to-50" | "50-to-100" | "100-to-200" | "over-200";
-type RatingFilter = "all" | "reviewed" | "high-rated";
+type RatingFilter = "all" | "rating-3" | "rating-3-5" | "rating-4" | "rating-4-5";
 type StoreInfoFilter =
   | "all"
   | "address"
@@ -61,6 +61,15 @@ function matchesStoreInfoFilter(business: Baazar, filter: StoreInfoFilter) {
   }
 
   return business.openingHours?.some((hour) => hour.trim().length > 0);
+}
+
+function getRatingFilterMinimum(filter: RatingFilter) {
+  if (filter === "rating-3") return 3;
+  if (filter === "rating-3-5") return 3.5;
+  if (filter === "rating-4") return 4;
+  if (filter === "rating-4-5") return 4.5;
+
+  return null;
 }
 
 function LoadingCards() {
@@ -150,10 +159,10 @@ export default function HomePage() {
       const matchesItemType =
         selectedItemType === "all" ||
         business.itemsType.includes(selectedItemType);
+      const ratingMinimum = getRatingFilterMinimum(ratingFilter);
       const matchesRating =
-        ratingFilter === "all" ||
-        (ratingFilter === "reviewed" && rating.count > 0) ||
-        (ratingFilter === "high-rated" && rating.rating >= 4.5);
+        ratingMinimum === null ||
+        (rating.count > 0 && rating.rating >= ratingMinimum);
 
       return (
         matchesSearch &&
@@ -324,8 +333,10 @@ export default function HomePage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Qualquer avaliação</SelectItem>
-                  <SelectItem value="reviewed">Com avaliações</SelectItem>
-                  <SelectItem value="high-rated">4,5 ou mais</SelectItem>
+                  <SelectItem value="rating-4-5">4,5 ou mais</SelectItem>
+                  <SelectItem value="rating-4">4,0 ou mais</SelectItem>
+                  <SelectItem value="rating-3-5">3,5 ou mais</SelectItem>
+                  <SelectItem value="rating-3">3,0 ou mais</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -391,4 +402,3 @@ export default function HomePage() {
     </div>
   );
 }
-
