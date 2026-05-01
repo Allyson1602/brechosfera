@@ -31,7 +31,7 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="hidden font-brand text-4xl leading-none text-primary sm:block">
+            <span className="hidden text-2xl leading-none font-bold text-primary sm:block">
               {appConfig.name}
             </span>
           </Link>

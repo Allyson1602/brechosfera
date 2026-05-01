@@ -1,13 +1,72 @@
 import { BusinessCard } from "@/components/business/BusinessCard";
 import { BusinessDetail } from "@/components/business/BusinessDetail";
 import { BusinessSearchField } from "@/components/business/BusinessSearchField";
+import { PageBackgroundVectors } from "@/components/layout/PageBackgroundVectors";
 import { Badge } from "@/components/ui/badge";
-import { getItemTypeSearchValue } from "@/lib/business/itemTypeLabels";
-import { Baazar } from "@/lib/graphql/generated";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { calculateRating } from "@/helpers/calculateRating";
+import {
+  getItemTypeLabel,
+  getItemTypeSearchValue,
+} from "@/lib/business/itemTypeLabels";
+import { Baazar, BaazarItemType } from "@/lib/graphql/generated";
 import { GET_LOCAL_BAAZARS } from "@/lib/graphql/queries/business";
 import { useQuery } from "@apollo/client/react";
-import { AlertCircle, HandHeart, Search, Sparkles } from "lucide-react";
+import {
+  AlertCircle,
+  HandHeart,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { useMemo, useState } from "react";
+
+type PriceFilter =
+  | "all"
+  | "up-to-50"
+  | "50-to-100"
+  | "100-to-200"
+  | "over-200";
+type RatingFilter = "all" | "reviewed" | "high-rated";
+type StoreInfoFilter =
+  | "all"
+  | "address"
+  | "exchange"
+  | "fast-contact"
+  | "opening-hours";
+
+function matchesPriceFilter(price: number, filter: PriceFilter) {
+  if (filter === "all") return true;
+  if (!price || price <= 0) return false;
+
+  if (filter === "up-to-50") return price <= 50;
+  if (filter === "50-to-100") return price > 50 && price <= 100;
+  if (filter === "100-to-200") return price > 100 && price <= 200;
+
+  return price > 200;
+}
+
+function matchesStoreInfoFilter(business: Baazar, filter: StoreInfoFilter) {
+  if (filter === "all") return true;
+  if (filter === "address") return Boolean(business.address?.trim());
+  if (filter === "exchange") return business.isAcceptExchange;
+  if (filter === "fast-contact") {
+    return (
+      business.linkWhatsapp?.some((item) => item.trim().length > 0) ||
+      business.linkInstagram?.some((item) => item.trim().length > 0)
+    );
+  }
+
+  return business.openingHours?.some((hour) => hour.trim().length > 0);
+}
 
 function LoadingCards() {
   return (
@@ -55,27 +114,84 @@ export default function HomePage() {
   const [selectedBusiness, setSelectedBusiness] = useState<Baazar | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedItemType, setSelectedItemType] = useState<
+    BaazarItemType | "all"
+  >("all");
+  const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
+  const [ratingFilter, setRatingFilter] = useState<RatingFilter>("all");
+  const [storeInfoFilter, setStoreInfoFilter] =
+    useState<StoreInfoFilter>("all");
 
   const physicalBusinesses = useMemo(() => {
     const dataItems = data?.findAllLocalBaazars || [];
     return dataItems.filter((business) => !business.isOnline);
   }, [data]);
 
+  const availableItemTypes = useMemo(() => {
+    const itemTypes = new Set<BaazarItemType>();
+
+    physicalBusinesses.forEach((business) => {
+      business.itemsType.forEach((item) => itemTypes.add(item));
+    });
+
+    return Array.from(itemTypes).sort((a, b) =>
+      getItemTypeLabel(a).localeCompare(getItemTypeLabel(b), "pt-BR"),
+    );
+  }, [physicalBusinesses]);
+
   const filteredBusinesses = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return physicalBusinesses;
 
     return physicalBusinesses.filter((business) => {
-      return (
+      const rating = calculateRating(business.evaluations);
+      const matchesSearch =
+        !query ||
         business.name.toLowerCase().includes(query) ||
         (business.description || "").toLowerCase().includes(query) ||
         (business.address || "").toLowerCase().includes(query) ||
         business.itemsType.some((item) =>
           getItemTypeSearchValue(item).includes(query),
-        )
+        );
+      const matchesItemType =
+        selectedItemType === "all" ||
+        business.itemsType.includes(selectedItemType);
+      const matchesRating =
+        ratingFilter === "all" ||
+        (ratingFilter === "reviewed" && rating.count > 0) ||
+        (ratingFilter === "high-rated" && rating.rating >= 4.5);
+
+      return (
+        matchesSearch &&
+        matchesItemType &&
+        matchesPriceFilter(business.averagePrice, priceFilter) &&
+        matchesRating &&
+        matchesStoreInfoFilter(business, storeInfoFilter)
       );
     });
-  }, [physicalBusinesses, searchQuery]);
+  }, [
+    physicalBusinesses,
+    priceFilter,
+    ratingFilter,
+    searchQuery,
+    selectedItemType,
+    storeInfoFilter,
+  ]);
+
+  const activeFiltersCount = [
+    searchQuery.trim(),
+    selectedItemType !== "all",
+    priceFilter !== "all",
+    ratingFilter !== "all",
+    storeInfoFilter !== "all",
+  ].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedItemType("all");
+    setPriceFilter("all");
+    setRatingFilter("all");
+    setStoreInfoFilter("all");
+  };
 
   const handleBusinessClick = (business: Baazar) => {
     setSelectedBusiness(business);
@@ -83,36 +199,27 @@ export default function HomePage() {
   };
 
   return (
-    <div className="bg-transparent">
-      <section className="relative overflow-hidden px-4 py-10 md:py-14">
-        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_32rem),linear-gradient(180deg,hsl(var(--accent)/0.8),transparent)]" />
+    <div className="relative isolate overflow-hidden bg-transparent">
+      <PageBackgroundVectors variant="home" />
 
+      <section className="relative overflow-hidden px-4 py-10 md:py-14">
         <div className="container mx-auto">
-          <div className="mx-auto max-w-3xl text-center">
-            <Badge className="mb-4 rounded-full px-4 py-1.5" variant="secondary">
+          <div className="mx-auto max-w-4xl text-center">
+            <Badge className="rounded-full px-4 py-1.5" variant="secondary">
               <Sparkles className="mr-2 h-4 w-4 text-primary" />
               Garimpos reais, preços possíveis
             </Badge>
 
-            <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
-              Encontre brechós acolhedores para renovar o guarda-roupa sem
-              pesar no bolso
+            <h1 className="text-3xl font-bold tracking-tight">
+              Encontre brechós acolhedores para renovar o guarda-roupa sem pesar
+              no bolso
             </h1>
 
-            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+            <p className="mx-auto mt-4 max-w-2xl text-base text-gray-600 md:text-lg">
               Veja lojas locais com preço médio, tipos de peças, endereço,
               horários e contato rápido para combinar sua visita com mais
               segurança.
             </p>
-          </div>
-
-          <div className="mx-auto mt-8 max-w-2xl">
-            <BusinessSearchField
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Buscar por loja, bairro ou tipo de peça..."
-              inputClassName="h-12 rounded-full bg-card/95 pl-11 shadow-sm"
-            />
           </div>
 
           <div className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-3">
@@ -142,7 +249,7 @@ export default function HomePage() {
       </section>
 
       <main className="container mx-auto px-4 pb-12">
-          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold">Lojas para conhecer</h2>
             <p className="text-sm text-muted-foreground">
@@ -157,10 +264,120 @@ export default function HomePage() {
           </p>
         </div>
 
+        <div className="mb-6 rounded-3xl border border-border/60 bg-card/85 p-4 shadow-sm backdrop-blur">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <BusinessSearchField
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Buscar por loja, bairro ou tipo de peça..."
+              inputClassName="h-11 rounded-full bg-background/90 pl-11"
+            />
+
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              <Select
+                value={selectedItemType}
+                onValueChange={(value) =>
+                  setSelectedItemType(value as BaazarItemType | "all")
+                }
+              >
+                <SelectTrigger className="h-11 rounded-full bg-background/90 lg:w-44">
+                  <SelectValue placeholder="Tipo de peça" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as peças</SelectItem>
+                  {availableItemTypes.map((itemType) => (
+                    <SelectItem key={itemType} value={itemType}>
+                      {getItemTypeLabel(itemType)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={priceFilter}
+                onValueChange={(value) => setPriceFilter(value as PriceFilter)}
+              >
+                <SelectTrigger className="h-11 rounded-full bg-background/90 lg:w-40">
+                  <SelectValue placeholder="Preço" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Qualquer preço</SelectItem>
+                  <SelectItem value="up-to-50">Até R$ 50</SelectItem>
+                  <SelectItem value="50-to-100">R$ 50 a R$ 100</SelectItem>
+                  <SelectItem value="100-to-200">R$ 100 a R$ 200</SelectItem>
+                  <SelectItem value="over-200">Acima de R$ 200</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={storeInfoFilter}
+                onValueChange={(value) =>
+                  setStoreInfoFilter(value as StoreInfoFilter)
+                }
+              >
+                <SelectTrigger className="h-11 rounded-full bg-background/90 lg:w-44">
+                  <SelectValue placeholder="Facilidades" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as lojas</SelectItem>
+                  <SelectItem value="address">Com endereço</SelectItem>
+                  <SelectItem value="fast-contact">Contato rápido</SelectItem>
+                  <SelectItem value="opening-hours">
+                    Horário informado
+                  </SelectItem>
+                  <SelectItem value="exchange">Aceita troca</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={ratingFilter}
+                onValueChange={(value) =>
+                  setRatingFilter(value as RatingFilter)
+                }
+              >
+                <SelectTrigger className="h-11 rounded-full bg-background/90 lg:w-44">
+                  <SelectValue placeholder="Avaliação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Qualquer avaliação</SelectItem>
+                  <SelectItem value="reviewed">Com avaliações</SelectItem>
+                  <SelectItem value="high-rated">4,5 ou mais</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <SlidersHorizontal className="h-4 w-4 text-primary" />
+              <span>
+                {activeFiltersCount > 0
+                  ? `${activeFiltersCount} filtro${activeFiltersCount !== 1 ? "s" : ""} aplicado${activeFiltersCount !== 1 ? "s" : ""}`
+                  : "Use os filtros para garimpar por estilo, preço e praticidade."}
+              </span>
+            </div>
+
+            {activeFiltersCount > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="self-start rounded-full px-3 sm:self-auto"
+              >
+                <X className="h-4 w-4" />
+                Limpar filtros
+              </Button>
+            )}
+          </div>
+        </div>
+
         {error ? (
           <div className="rounded-3xl border border-destructive/20 bg-destructive/5 px-6 py-14 text-center">
             <AlertCircle className="mx-auto mb-4 h-12 w-12 text-destructive" />
-            <h2 className="text-xl font-semibold">Não foi possível carregar as lojas</h2>
+            <h2 className="text-xl font-semibold">
+              Não foi possível carregar as lojas
+            </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Tente novamente em alguns instantes.
             </p>

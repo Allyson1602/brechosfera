@@ -167,20 +167,12 @@ export function BusinessCard({
 
   return (
     <Card
-      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border-border/60 bg-card transition-all hover:-translate-y-1 hover:shadow-xl"
+      className="flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border-border/60 bg-card transition-all hover:-translate-y-1 hover:shadow-xl"
       onClick={onClick}
     >
       <div className="relative overflow-hidden border-b border-border/50 bg-gradient-to-br from-accent via-card to-muted/40 px-5 py-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <Badge className="mb-3 rounded-full bg-card/90 text-foreground shadow-sm backdrop-blur hover:bg-card">
-              {business.isOnline ? (
-                <Globe className="mr-1 h-3 w-3 text-primary" />
-              ) : (
-                <MapPin className="mr-1 h-3 w-3 text-primary" />
-              )}
-              {business.isOnline ? "Loja online" : "Loja local"}
-            </Badge>
             <h3 className="line-clamp-2 text-xl font-extrabold leading-tight">
               {business.name}
             </h3>
@@ -194,12 +186,12 @@ export function BusinessCard({
             </p>
           </div>
 
-          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-card p-2.5 shadow-md transition-transform duration-300 group-hover:scale-[1.03]">
+          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-card p-0.5 shadow-md">
             {logoSrc ? (
               <img
                 src={logoSrc}
                 alt={business.name}
-                className="h-full w-full rounded-xl object-contain"
+                className="h-full w-full rounded-xl object-cover"
               />
             ) : (
               <span className="text-lg font-extrabold text-primary">
@@ -250,7 +242,9 @@ export function BusinessCard({
             <Shirt className="h-4 w-4 flex-shrink-0 text-primary" />
             <span className="truncate">
               {visibleItemTypes.length > 0
-                ? visibleItemTypes.map((item) => getItemTypeLabel(item)).join(", ")
+                ? visibleItemTypes
+                    .map((item) => getItemTypeLabel(item))
+                    .join(", ")
                 : "Variedade de peças"}
             </span>
           </div>

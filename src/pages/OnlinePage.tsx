@@ -1,6 +1,7 @@
 import { BusinessCard } from "@/components/business/BusinessCard";
 import { BusinessDetail } from "@/components/business/BusinessDetail";
 import { BusinessSearchField } from "@/components/business/BusinessSearchField";
+import { PageBackgroundVectors } from "@/components/layout/PageBackgroundVectors";
 import { Badge } from "@/components/ui/badge";
 import { getItemTypeSearchValue } from "@/lib/business/itemTypeLabels";
 import { Baazar } from "@/lib/graphql/generated";
@@ -79,10 +80,10 @@ export default function OnlinePage() {
   };
 
   return (
-    <div className="bg-transparent">
-      <section className="relative overflow-hidden px-4 py-10 md:py-14">
-        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.16),transparent_30rem),linear-gradient(180deg,hsl(var(--accent)/0.75),transparent)]" />
+    <div className="relative isolate overflow-hidden bg-transparent">
+      <PageBackgroundVectors variant="online" />
 
+      <section className="relative overflow-hidden px-4 py-10 md:py-14">
         <div className="container mx-auto">
           <div className="mx-auto max-w-3xl text-center">
             <Badge className="mb-4 rounded-full px-4 py-1.5" variant="secondary">
