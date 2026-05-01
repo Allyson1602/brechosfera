@@ -205,7 +205,7 @@ export default function OnlinePage() {
     <div className="relative isolate overflow-hidden bg-transparent">
       <PageBackgroundVectors variant="online" />
 
-      <section className="relative overflow-hidden px-4 py-10 md:py-14">
+      <section className="relative overflow-hidden px-4 py-6 md:py-14">
         <div className="container mx-auto">
           <div className="mx-auto max-w-3xl text-center">
             <Badge
@@ -216,12 +216,12 @@ export default function OnlinePage() {
               Brechós online com informação prática
             </Badge>
 
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
               Compre de qualquer lugar com mais clareza sobre peças, preço e
               contato
             </h1>
 
-            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground md:mt-4 md:text-lg">
               Veja lojas que vendem online com foco no que ajuda a decidir
               rápido: faixa de preço, tipos de peças, avaliação, troca e canal
               de contato.
@@ -237,22 +237,22 @@ export default function OnlinePage() {
             />
           </div>
 
-          <div className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur">
+          <div className="scrollbar-none -mx-4 mt-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-auto sm:mt-6 sm:grid sm:max-w-3xl sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
+            <div className="w-64 flex-none rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur sm:w-auto">
               <MessageCircle className="mb-2 h-5 w-5 text-primary" />
               <p className="text-sm font-semibold">Contato mais rápido</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Priorize lojas com canal direto para tirar dúvidas.
               </p>
             </div>
-            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur">
+            <div className="w-64 flex-none rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur sm:w-auto">
               <Sparkles className="mb-2 h-5 w-5 text-primary" />
               <p className="text-sm font-semibold">Preço e variedade</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Compare faixas de valor e tipos de peças sem sair da tela.
               </p>
             </div>
-            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur">
+            <div className="w-64 flex-none rounded-2xl border border-border/60 bg-card/80 p-4 text-left shadow-sm backdrop-blur sm:w-auto">
               <Globe className="mb-2 h-5 w-5 text-primary" />
               <p className="text-sm font-semibold">Compra remota</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -264,7 +264,7 @@ export default function OnlinePage() {
       </section>
 
       <main className="container mx-auto px-4 pb-12">
-        <div className="mb-6">
+        <div className="mb-3 md:mb-6">
           <div>
             <h2 className="text-2xl font-bold">Lojas para conhecer</h2>
             <p className="hidden">
@@ -279,23 +279,23 @@ export default function OnlinePage() {
           </p>
         </div>
 
-        <div className="mb-6 rounded-3xl border border-border/60 bg-card/85 p-4 shadow-sm backdrop-blur">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="mb-4 rounded-2xl border border-border/60 bg-card/85 p-3 shadow-sm backdrop-blur md:mb-6 md:rounded-3xl md:p-4">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
             <BusinessSearchField
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Buscar por loja ou tipo de peça..."
-              inputClassName="h-11 rounded-full bg-background/90 pl-11"
+              inputClassName="h-10 rounded-full bg-background/90 pl-11 md:h-11"
             />
 
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
               <Select
                 value={selectedItemType}
                 onValueChange={(value) =>
                   setSelectedItemType(value as BaazarItemType | "all")
                 }
               >
-                <SelectTrigger className="h-11 rounded-full bg-background/90 lg:w-44">
+                <SelectTrigger className="h-10 rounded-full bg-background/90 text-xs md:h-11 md:text-sm lg:w-44">
                   <SelectValue placeholder="Tipo de peça" />
                 </SelectTrigger>
                 <SelectContent>
@@ -312,7 +312,7 @@ export default function OnlinePage() {
                 value={priceFilter}
                 onValueChange={(value) => setPriceFilter(value as PriceFilter)}
               >
-                <SelectTrigger className="h-11 rounded-full bg-background/90 lg:w-40">
+                <SelectTrigger className="h-10 rounded-full bg-background/90 text-xs md:h-11 md:text-sm lg:w-40">
                   <SelectValue placeholder="Preço" />
                 </SelectTrigger>
                 <SelectContent>
@@ -330,7 +330,7 @@ export default function OnlinePage() {
                   setStoreInfoFilter(value as StoreInfoFilter)
                 }
               >
-                <SelectTrigger className="h-11 rounded-full bg-background/90 lg:w-44">
+                <SelectTrigger className="h-10 rounded-full bg-background/90 text-xs md:h-11 md:text-sm lg:w-44">
                   <SelectValue placeholder="Facilidades" />
                 </SelectTrigger>
                 <SelectContent>
@@ -349,7 +349,7 @@ export default function OnlinePage() {
                   setRatingFilter(value as RatingFilter)
                 }
               >
-                <SelectTrigger className="h-11 rounded-full bg-background/90 lg:w-44">
+                <SelectTrigger className="h-10 rounded-full bg-background/90 text-xs md:h-11 md:text-sm lg:w-44">
                   <SelectValue placeholder="Avaliação" />
                 </SelectTrigger>
                 <SelectContent>
@@ -363,8 +363,8 @@ export default function OnlinePage() {
             </div>
           </div>
 
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between md:mt-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground md:text-sm">
               <SlidersHorizontal className="h-4 w-4 text-primary" />
               <span>
                 {activeFiltersCount > 0
