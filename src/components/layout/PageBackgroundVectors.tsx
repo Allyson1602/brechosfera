@@ -178,7 +178,7 @@ export function PageBackgroundVectors({ variant }: PageBackgroundVectorsProps) {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
     >
-      {vectorGroups[variant].map((vector, index) => (
+      {vectorGroups[variant].map((vector, index) =>
         vector.icon ? (
           <DecorativeIcon
             key={`${variant}-${index}`}
@@ -193,8 +193,8 @@ export function PageBackgroundVectors({ variant }: PageBackgroundVectorsProps) {
             draggable={false}
             className={`absolute select-none object-contain blur-[0.2px] [filter:brightness(0)_saturate(100%)_invert(27%)_sepia(86%)_saturate(2218%)_hue-rotate(313deg)_brightness(91%)_contrast(90%)] ${vector.className}`}
           />
-        )
-      ))}
+        ),
+      )}
     </div>
   );
 }
