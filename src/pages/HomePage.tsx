@@ -30,7 +30,12 @@ import {
 import { useMemo, useState } from "react";
 
 type PriceFilter = "all" | "up-to-50" | "50-to-100" | "100-to-200" | "over-200";
-type RatingFilter = "all" | "rating-3" | "rating-3-5" | "rating-4" | "rating-4-5";
+type RatingFilter =
+  | "all"
+  | "rating-3"
+  | "rating-3-5"
+  | "rating-4"
+  | "rating-4-5";
 type StoreInfoFilter =
   | "all"
   | "address"
@@ -209,7 +214,10 @@ export default function HomePage() {
       <section className="relative overflow-hidden px-4 py-10 md:py-14">
         <div className="container mx-auto">
           <div className="mx-auto max-w-4xl text-center">
-            <Badge className="rounded-full px-4 py-1.5" variant="secondary">
+            <Badge
+              className="mb-4 rounded-full px-4 py-1.5"
+              variant="secondary"
+            >
               <Sparkles className="mr-2 h-4 w-4 text-secondary" />
               Garimpos reais, preços possíveis
             </Badge>
@@ -219,7 +227,7 @@ export default function HomePage() {
               no bolso
             </h1>
 
-            <p className="mx-auto mt-4 max-w-2xl text-base text-gray-600 md:text-lg">
+            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
               Veja lojas locais com preço médio, tipos de peças, endereço,
               horários e contato rápido para combinar sua visita com mais
               segurança.
@@ -402,3 +410,4 @@ export default function HomePage() {
     </div>
   );
 }
+

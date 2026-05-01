@@ -214,7 +214,9 @@ export default function EventsPage() {
     });
   }, [activeTab, allEvents, searchQuery]);
 
-  const publishedEventsCount = allEvents.filter((event) => event.isPublished).length;
+  const publishedEventsCount = allEvents.filter(
+    (event) => event.isPublished,
+  ).length;
 
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
@@ -228,30 +230,18 @@ export default function EventsPage() {
       <section className="relative overflow-hidden px-4 py-10 md:py-14">
         <div className="container mx-auto">
           <div className="mx-auto max-w-3xl text-center">
-            <Badge className="mb-4 rounded-full px-4 py-1.5" variant="secondary">
+            <Badge
+              className="mb-4 rounded-full px-4 py-1.5"
+              variant="secondary"
+            >
               <Sparkles className="mr-2 h-4 w-4 text-secondary" />
               Encontros para garimpar com mais planejamento
             </Badge>
 
-            <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
+            <h1 className="text-3xl font-bold tracking-tight">
               Veja eventos presenciais com data, bairro e organização de forma
               simples
             </h1>
-
-            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
-              Mantivemos o mesmo foco da home: destacar o que ajuda na decisão
-              real, como quando acontece, onde é, quem organiza e quais temas
-              podem interessar.
-            </p>
-          </div>
-
-          <div className="mx-auto mt-8 max-w-2xl">
-            <BusinessSearchField
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Buscar por evento, bairro, cidade ou tema..."
-              inputClassName="h-12 rounded-full bg-card/95 pl-11 shadow-sm"
-            />
           </div>
 
           <div className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-3">
@@ -278,25 +268,26 @@ export default function EventsPage() {
             </div>
           </div>
         </div>
+
+        <div className="mx-auto mt-8 max-w-2xl">
+          <BusinessSearchField
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Buscar por evento, bairro, cidade ou tema..."
+            inputClassName="h-12 rounded-full bg-card/95 pl-11 shadow-sm"
+          />
+        </div>
       </section>
 
       <main className="container mx-auto px-4 pb-12">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Eventos para acompanhar</h2>
-            <p className="text-sm text-muted-foreground">
-              {eventsLoading
-                ? "Buscando eventos publicados..."
-                : `${filteredEvents.length} evento${filteredEvents.length !== 1 ? "s" : ""} nesta visualização`}
-            </p>
-          </div>
+          <h2 className="text-2xl font-bold">Eventos para acompanhar</h2>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="rounded-2xl border border-border/60 bg-card/80 px-4 py-3 text-sm shadow-sm">
-              Total de eventos publicados:{" "}
-              <strong>{publishedEventsCount}</strong>
-            </div>
-            <Button onClick={() => navigate("/eventos/criar")} className="rounded-full">
+            <Button
+              onClick={() => navigate("/eventos/criar")}
+              className="rounded-full"
+            >
               Criar evento
             </Button>
           </div>
@@ -333,7 +324,9 @@ export default function EventsPage() {
         {eventsQueryError ? (
           <div className="rounded-3xl border border-destructive/20 bg-destructive/5 px-6 py-14 text-center">
             <AlertCircle className="mx-auto mb-4 h-12 w-12 text-destructive" />
-            <h2 className="text-xl font-semibold">Não foi possível carregar os eventos</h2>
+            <h2 className="text-xl font-semibold">
+              Não foi possível carregar os eventos
+            </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Tente novamente em alguns instantes.
             </p>
