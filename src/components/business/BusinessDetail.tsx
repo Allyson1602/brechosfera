@@ -14,6 +14,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -71,9 +77,11 @@ export function BusinessDetail({
   onClose,
 }: BusinessDetailProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageZoomOpen, setImageZoomOpen] = useState(false);
 
   useEffect(() => {
     setCurrentImageIndex(0);
+    setImageZoomOpen(false);
   }, [business?.id]);
 
   const allImages = useMemo(() => {
@@ -95,10 +103,11 @@ export function BusinessDetail({
   if (!business) return null;
 
   const itemTypes = business.itemsType ?? [];
-  const openingHours = business.openingHours ?? [];
+  const openingHours = normalizeStringList(business.openingHours);
   const rating = calculateRating(business.evaluations);
   const whatsappUrl = buildWhatsAppUrl(business.linkWhatsapp);
   const instagramUrl = buildInstagramUrl(business.linkInstagram);
+  const currentImage = allImages[currentImageIndex];
 
   const handleWhatsApp = () => {
     if (whatsappUrl) {
@@ -144,9 +153,10 @@ export function BusinessDetail({
                   fetchPriority={index === currentImageIndex ? "high" : "auto"}
                   className={`absolute inset-0 h-full w-full select-none object-contain p-4 transition-opacity duration-200 ${
                     index === currentImageIndex
-                      ? "opacity-100"
+                      ? "cursor-zoom-in opacity-100"
                       : "pointer-events-none opacity-0"
                   }`}
+                  onClick={() => setImageZoomOpen(true)}
                   onDragStart={(event) => event.preventDefault()}
                 />
               ))
@@ -159,18 +169,16 @@ export function BusinessDetail({
             {allImages.length > 1 && (
               <>
                 <Button
-                  variant="secondary"
                   size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/70 text-secondary shadow-sm backdrop-blur-sm hover:bg-background/85"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/70 text-primary shadow-sm backdrop-blur-sm hover:bg-background/85"
                   onClick={prevImage}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
 
                 <Button
-                  variant="secondary"
                   size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/70 text-secondary shadow-sm backdrop-blur-sm hover:bg-background/85"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/70 text-primary shadow-sm backdrop-blur-sm hover:bg-background/85"
                   onClick={nextImage}
                 >
                   <ChevronRight className="h-4 w-4" />
@@ -182,7 +190,7 @@ export function BusinessDetail({
                       key={index}
                       className={`h-2 w-2 rounded-full transition-colors ${
                         index === currentImageIndex
-                          ? "bg-secondary"
+                          ? "bg-primary"
                           : "bg-card/60"
                       }`}
                       onClick={() => setCurrentImageIndex(index)}
@@ -193,9 +201,8 @@ export function BusinessDetail({
             )}
 
             <Button
-              variant="secondary"
               size="icon"
-              className="absolute right-3 top-3 rounded-full bg-background/70 text-secondary shadow-sm backdrop-blur-sm hover:bg-background/85"
+              className="absolute right-3 top-3 rounded-full bg-background/70 text-primary shadow-sm backdrop-blur-sm hover:bg-background/85"
               onClick={onClose}
             >
               <X className="h-4 w-4" />
@@ -217,29 +224,31 @@ export function BusinessDetail({
                 Detalhes da loja {business.name}, incluindo imagens, descrição,
                 contatos e avaliação.
               </SheetDescription>
+
+              {!business.isOnline && business.address && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
+                  <p className="break-words text-sm">{business.address}</p>
+                </div>
+              )}
+
               <div className="flex items-center gap-2 text-sm">
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-semibold">{rating.rating}</span>
                 </div>
+
                 <span className="text-muted-foreground">
                   ({rating.count} avaliações)
                 </span>
               </div>
             </SheetHeader>
 
-            {!business.isOnline && business.address && (
-              <div className="mb-4 flex items-start gap-2">
-                <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-                <div>
-                  <p className="break-words text-sm">{business.address}</p>
-                </div>
-              </div>
+            {business.description && (
+              <p className="font-hand text-xl leading-6 text-gray-600 mb-8">
+                {business.description}
+              </p>
             )}
-
-            <p className="mb-4 text-muted-foreground">
-              {business.description || "Sem descrição disponível."}
-            </p>
 
             {itemTypes.length > 0 && (
               <div className="mb-4">
@@ -306,6 +315,69 @@ export function BusinessDetail({
           </div>
         </div>
       </SheetContent>
+
+      <Dialog open={imageZoomOpen} onOpenChange={setImageZoomOpen}>
+        <DialogContent className="max-w-[min(94vw,1100px)] border-0 bg-transparent p-0 shadow-none [&>button]:bg-background/80 [&>button]:text-foreground [&>button]:backdrop-blur-sm">
+          <DialogTitle className="sr-only">
+            Imagem ampliada de {business.name}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Visualização ampliada da imagem selecionada da loja.
+          </DialogDescription>
+          {currentImage && (
+            <div className="relative flex h-[88vh] items-center justify-center">
+              <img
+                src={currentImage}
+                alt={business.name}
+                className="max-h-full w-full rounded-2xl object-contain"
+              />
+
+              {allImages.length > 1 && (
+                <>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 text-secondary shadow-sm backdrop-blur-sm hover:bg-background/90"
+                    onClick={prevImage}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                    <span className="sr-only">Imagem anterior</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 text-secondary shadow-sm backdrop-blur-sm hover:bg-background/90"
+                    onClick={nextImage}
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                    <span className="sr-only">Próxima imagem</span>
+                  </Button>
+
+                  <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-background/80 px-3 py-2 shadow-sm backdrop-blur-sm">
+                    {allImages.map((_, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                          index === currentImageIndex
+                            ? "bg-secondary"
+                            : "bg-muted"
+                        }`}
+                        onClick={() => setCurrentImageIndex(index)}
+                      >
+                        <span className="sr-only">Ver imagem {index + 1}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }
