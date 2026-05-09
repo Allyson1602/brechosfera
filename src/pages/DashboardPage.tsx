@@ -29,7 +29,9 @@ export default function DashboardPage() {
             </div>
 
             {userRoleLabel && (
-              <Badge variant="secondary">{userRoleLabel}</Badge>
+              <div>
+                <Badge variant="secondary">{userRoleLabel}</Badge>
+              </div>
             )}
           </div>
         </CardHeader>

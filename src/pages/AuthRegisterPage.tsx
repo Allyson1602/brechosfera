@@ -162,9 +162,10 @@ export default function AuthRegisterPage() {
                 </div>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   onClick={handleRequestCode}
                   disabled={isCodeRequestDisabled}
+                  className="text-white"
                 >
                   {codeRequestLabel}
                 </Button>
