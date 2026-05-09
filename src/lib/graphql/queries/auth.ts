@@ -74,3 +74,36 @@ export const REFRESH_SESSION_MUTATION = gql`
   }
   ${AUTH_USER_FIELDS}
 `;
+
+export const REQUEST_ACCOUNT_UPDATE_VERIFICATION_CODE_MUTATION = gql`
+  mutation RequestAccountUpdateVerificationCode(
+    $input: RequestAccountUpdateVerificationCodeInput!
+  ) {
+    requestAccountUpdateVerificationCode(input: $input) {
+      success
+      message
+    }
+  }
+`;
+
+export const UPDATE_ACCOUNT_MUTATION = gql`
+  mutation UpdateAccount($input: UpdateAccountInput!) {
+    updateAccount(input: $input) {
+      success
+      message
+      user {
+        ...AuthUserFields
+      }
+    }
+  }
+  ${AUTH_USER_FIELDS}
+`;
+
+export const DELETE_ACCOUNT_MUTATION = gql`
+  mutation DeleteAccount($input: DeleteAccountInput!) {
+    deleteAccount(input: $input) {
+      success
+      message
+    }
+  }
+`;

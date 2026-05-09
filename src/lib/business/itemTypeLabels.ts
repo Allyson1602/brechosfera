@@ -13,12 +13,12 @@ const ITEM_TYPE_LABELS: Record<BaazarItemType, string> = {
   [BaazarItemType.Kitchenware]: "utensílios de cozinha",
   [BaazarItemType.KnickKnacks]: "objetos decorativos",
   [BaazarItemType.Media]: "mídia",
-  [BaazarItemType.Menswear]: "roupa para homem",
+  [BaazarItemType.Menswear]: "roupa masculina",
   [BaazarItemType.PersonalCare]: "cuidados pessoais",
   [BaazarItemType.Shoes]: "sapatos",
   [BaazarItemType.ToolsAndEquipment]: "ferramentas e equipamentos",
   [BaazarItemType.Toys]: "brinquedos",
-  [BaazarItemType.Womenswear]: "roupa para mulher",
+  [BaazarItemType.Womenswear]: "roupa feminina",
 };
 
 export function getItemTypeLabel(itemType: BaazarItemType | string): string {

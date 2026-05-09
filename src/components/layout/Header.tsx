@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Menu,
-  X,
   MapPin,
   Calendar,
   Globe,
-  PlusCircle,
-  Search,
+  LogIn,
+  LogOut,
+  UserCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,18 +18,27 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { appConfig } from "@/config/app.config";
-import logoImg from "@/lib/assets/images/logo.png";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { to: "/", label: "Local", icon: MapPin },
   { to: "/online", label: "Online", icon: Globe },
   { to: "/eventos", label: "Eventos", icon: Calendar },
-  { to: "/cadastrar", label: "Cadastrar", icon: PlusCircle },
 ];
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { isAuthenticated, logout, isLoading } = useAuth();
+  const accountLink = isAuthenticated
+    ? { to: "/conta", label: "Conta", icon: UserCircle }
+    : { to: "/login", label: "Entrar", icon: LogIn };
+  const visibleLinks = [...navLinks, accountLink];
+
+  const handleLogout = async () => {
+    setIsOpen(false);
+    await logout();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-none bg-pink-100/20 shadow-none backdrop-blur-sm">
@@ -43,8 +52,8 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => {
+          <nav className="hidden items-center gap-1 md:flex">
+            {visibleLinks.map((link) => {
               const isActive = location.pathname === link.to;
               return (
                 <Link key={link.to} to={link.to}>
@@ -58,6 +67,17 @@ export function Header() {
                 </Link>
               );
             })}
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                className="gap-2"
+                onClick={handleLogout}
+                disabled={isLoading}
+              >
+                <LogOut className="h-4 w-4" />
+                Sair
+              </Button>
+            )}
           </nav>
 
           {/* Mobile Menu */}
@@ -72,8 +92,8 @@ export function Header() {
               <SheetDescription className="sr-only">
                 Links principais para navegar pela Brechosfera.
               </SheetDescription>
-              <div className="flex flex-col gap-4 mt-8">
-                {navLinks.map((link) => {
+              <div className="mt-8 flex flex-col gap-4">
+                {visibleLinks.map((link) => {
                   const isActive = location.pathname === link.to;
                   return (
                     <Link
@@ -85,12 +105,23 @@ export function Header() {
                         variant={isActive ? "default" : "ghost"}
                         className="w-full justify-start gap-3"
                       >
-                        <link.icon className="w-5 h-5" />
+                        <link.icon className="h-5 w-5" />
                         {link.label}
                       </Button>
                     </Link>
                   );
                 })}
+                {isAuthenticated && (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3"
+                    onClick={handleLogout}
+                    disabled={isLoading}
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Sair
+                  </Button>
+                )}
               </div>
             </SheetContent>
           </Sheet>
