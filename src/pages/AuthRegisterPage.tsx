@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, UserPlus } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/sonner";
@@ -24,6 +25,9 @@ const registerSchema = z.object({
   emailVerificationCode: z
     .string()
     .regex(/^\d{6}$/, "Informe o código de 6 dígitos."),
+  acceptedTerms: z.boolean().refine(Boolean, {
+    message: "Aceite os termos de uso para criar sua conta.",
+  }),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -47,6 +51,7 @@ export default function AuthRegisterPage() {
     handleSubmit,
     getValues,
     trigger,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -55,6 +60,7 @@ export default function AuthRegisterPage() {
       email: "",
       password: "",
       emailVerificationCode: "",
+      acceptedTerms: false,
     },
   });
 
@@ -81,9 +87,9 @@ export default function AuthRegisterPage() {
       await requestEmailVerificationCode(getValues("email"));
       setHasRequestedCode(true);
       setResendSeconds(DEFAULT_EMAIL_CODE_COOLDOWN_SECONDS);
-      toast.success("Se o e-mail estiver disponível, enviaremos um código.");
-    } catch {
-      toast.error("Não foi possível enviar o código agora.");
+      toast.success("Código de verificação enviado.");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Não foi possível enviar o código agora."));
     } finally {
       setIsSendingCode(false);
     }
@@ -104,16 +110,17 @@ export default function AuthRegisterPage() {
         email: data.email.trim(),
         password: data.password,
         emailVerificationCode: data.emailVerificationCode,
+        acceptedTerms: data.acceptedTerms,
       });
       toast.success("Cadastro criado.");
-      navigate("/dashboard", { replace: true });
-    } catch {
-      toast.error("Não foi possível criar o cadastro agora.");
+      navigate("/", { replace: true });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Não foi possível criar o cadastro agora."));
     }
   };
 
   if (!isLoading && isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -216,6 +223,40 @@ export default function AuthRegisterPage() {
               )}
             </div>
 
+            <Controller
+              name="acceptedTerms"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  <label
+                    htmlFor="acceptedTerms"
+                    className="flex items-start gap-3 rounded-lg border bg-background/70 p-3 text-sm"
+                  >
+                    <Checkbox
+                      id="acceptedTerms"
+                      checked={field.value}
+                      onCheckedChange={(value) => field.onChange(value === true)}
+                    />
+                    <span className="text-muted-foreground">
+                      Li e aceito os{" "}
+                      <Link
+                        to="/termos-de-uso"
+                        className="font-medium text-primary underline-offset-4 hover:underline"
+                      >
+                        termos de uso
+                      </Link>{" "}
+                      da Brechosfera.
+                    </span>
+                  </label>
+                  {errors.acceptedTerms && (
+                    <p className="text-sm text-destructive">
+                      {errors.acceptedTerms.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+
             <Button
               type="submit"
               className="w-full"
@@ -231,9 +272,26 @@ export default function AuthRegisterPage() {
               Entrar
             </Link>
           </p>
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            Quer cadastrar uma loja?{" "}
+            <Link to="/cadastrar" className="font-medium text-primary">
+              Cadastrar loja
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>
   );
 }
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const message = String((error as { message?: unknown }).message ?? "");
+
+    if (message) {
+      return message;
+    }
+  }
+
+  return fallback;
+}

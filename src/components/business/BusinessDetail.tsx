@@ -9,7 +9,7 @@
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -76,18 +76,23 @@ export function BusinessDetail({
   open,
   onClose,
 }: BusinessDetailProps) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageZoomOpen, setImageZoomOpen] = useState(false);
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const [galleryLayout, setGalleryLayout] = useState<{
+    columns: number;
+    rows: 1 | 2;
+  }>({ columns: 1, rows: 1 });
 
   useEffect(() => {
-    setCurrentImageIndex(0);
+    setSelectedImage(null);
     setImageZoomOpen(false);
   }, [business?.id]);
 
   const allImages = useMemo(() => {
     if (!business) return [];
 
-    return [business.logoImage, ...(business.images ?? [])]
+    return (business.images ?? [])
       .map((image) => resolveImageSrc(image))
       .filter((image): image is string => !!image && image.trim().length > 0)
       .filter((image, index, self) => self.indexOf(image) === index);
@@ -100,6 +105,65 @@ export function BusinessDetail({
     });
   }, [allImages]);
 
+  useEffect(() => {
+    const gallery = galleryRef.current;
+    if (!gallery || allImages.length === 0) return;
+
+    const updateLayout = () => {
+      const firstImageButton = gallery.querySelector<HTMLButtonElement>(
+        "[data-gallery-image]",
+      );
+      const tileWidth = firstImageButton?.offsetWidth ?? 120;
+      const gap = parseFloat(getComputedStyle(gallery).columnGap) || 8;
+      const availableWidth = gallery.clientWidth;
+      const columns = Math.max(
+        1,
+        Math.floor((availableWidth + gap) / (tileWidth + gap)),
+      );
+      const rows = allImages.length > columns ? 2 : 1;
+
+      setGalleryLayout((currentLayout) => {
+        if (currentLayout.columns === columns && currentLayout.rows === rows) {
+          return currentLayout;
+        }
+
+        return { columns, rows };
+      });
+    };
+
+    updateLayout();
+
+    const animationFrame = window.requestAnimationFrame(updateLayout);
+    const resizeObserver = new ResizeObserver(updateLayout);
+    resizeObserver.observe(gallery);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      resizeObserver.disconnect();
+    };
+  }, [allImages.length, open]);
+
+  const galleryImages = useMemo(() => {
+    if (galleryLayout.rows === 1) return allImages;
+
+    const pageSize = galleryLayout.columns * 2;
+    const orderedImages: string[] = [];
+
+    for (let pageStart = 0; pageStart < allImages.length; pageStart += pageSize) {
+      const pageImages = allImages.slice(pageStart, pageStart + pageSize);
+
+      for (let column = 0; column < galleryLayout.columns; column += 1) {
+        const topImage = pageImages[column];
+        const bottomImage = pageImages[galleryLayout.columns + column];
+
+        if (topImage) orderedImages.push(topImage);
+        if (bottomImage) orderedImages.push(bottomImage);
+      }
+    }
+
+    return orderedImages;
+  }, [allImages, galleryLayout]);
+
   if (!business) return null;
 
   const itemTypes = business.itemsType ?? [];
@@ -107,7 +171,8 @@ export function BusinessDetail({
   const rating = calculateRating(business.evaluations);
   const whatsappUrl = buildWhatsAppUrl(business.linkWhatsapp);
   const instagramUrl = buildInstagramUrl(business.linkInstagram);
-  const currentImage = allImages[currentImageIndex];
+  const currentImage = selectedImage ?? allImages[0];
+  const selectedImageIndex = Math.max(allImages.indexOf(currentImage), 0);
 
   const handleWhatsApp = () => {
     if (whatsappUrl) {
@@ -123,14 +188,15 @@ export function BusinessDetail({
 
   const nextImage = () => {
     if (allImages.length === 0) return;
-    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+    const nextIndex = (selectedImageIndex + 1) % allImages.length;
+    setSelectedImage(allImages[nextIndex]);
   };
 
   const prevImage = () => {
     if (allImages.length === 0) return;
-    setCurrentImageIndex(
-      (prev) => (prev - 1 + allImages.length) % allImages.length,
-    );
+    const prevIndex =
+      (selectedImageIndex - 1 + allImages.length) % allImages.length;
+    setSelectedImage(allImages[prevIndex]);
   };
 
   return (
@@ -140,77 +206,18 @@ export function BusinessDetail({
         if (!nextOpen) onClose();
       }}
     >
-      <SheetContent className="w-full overflow-y-auto p-0 sm:max-w-lg">
+      <SheetContent className="w-full overflow-y-auto p-0 sm:max-w-lg lg:max-w-xl">
         <div className="relative">
-          <div className="relative h-64 bg-muted/40">
-            {allImages.length > 0 ? (
-              allImages.map((image, index) => (
-                <img
-                  key={image}
-                  src={image}
-                  alt={business.name}
-                  draggable={false}
-                  fetchpriority={index === currentImageIndex ? "high" : "auto"}
-                  className={`absolute inset-0 h-full w-full select-none object-contain p-4 transition-opacity duration-200 ${
-                    index === currentImageIndex
-                      ? "cursor-zoom-in opacity-100"
-                      : "pointer-events-none opacity-0"
-                  }`}
-                  onClick={() => setImageZoomOpen(true)}
-                  onDragStart={(event) => event.preventDefault()}
-                />
-              ))
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
-                Imagem indisponível
-              </div>
-            )}
-
-            {allImages.length > 1 && (
-              <>
-                <Button
-                  size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/70 text-primary shadow-sm backdrop-blur-sm hover:bg-background/85"
-                  onClick={prevImage}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-
-                <Button
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/70 text-primary shadow-sm backdrop-blur-sm hover:bg-background/85"
-                  onClick={nextImage}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-
-                <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
-                  {allImages.map((_, index) => (
-                    <button
-                      key={index}
-                      className={`h-2 w-2 rounded-full transition-colors ${
-                        index === currentImageIndex
-                          ? "bg-primary"
-                          : "bg-card/60"
-                      }`}
-                      onClick={() => setCurrentImageIndex(index)}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-
-            <Button
-              size="icon"
-              className="absolute right-3 top-3 rounded-full bg-background/70 text-primary shadow-sm backdrop-blur-sm hover:bg-background/85"
-              onClick={onClose}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button
+            size="icon"
+            className="absolute right-3 top-3 z-10 rounded-full bg-background/80 text-primary shadow-sm backdrop-blur-sm hover:bg-background/90"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
 
           <div className="p-6">
-            <SheetHeader className="mb-4 text-left">
+            <SheetHeader className="mb-5 text-left">
               <div className="mb-2 flex items-center gap-2">
                 {business.isOnline && (
                   <Badge className="bg-primary">
@@ -219,7 +226,9 @@ export function BusinessDetail({
                   </Badge>
                 )}
               </div>
+
               <SheetTitle className="text-2xl">{business.name}</SheetTitle>
+
               <SheetDescription className="sr-only">
                 Detalhes da loja {business.name}, incluindo imagens, descrição,
                 contatos e avaliação.
@@ -243,6 +252,49 @@ export function BusinessDetail({
                 </span>
               </div>
             </SheetHeader>
+
+            {allImages.length > 0 ? (
+              <div className="mb-6">
+                <h4 className="mb-3 font-semibold">Fotos da loja</h4>
+
+                <div
+                  ref={galleryRef}
+                  className={`scrollbar-none grid auto-cols-[7.5rem] grid-flow-col gap-2 overflow-x-auto pb-2 sm:auto-cols-[8rem] ${
+                    galleryLayout.rows === 2 ? "grid-rows-2" : "grid-rows-1"
+                  }`}
+                >
+                  {galleryImages.map((image) => (
+                    <button
+                      key={image}
+                      type="button"
+                      data-gallery-image
+                      className={`group relative aspect-square overflow-hidden rounded-lg border bg-muted/40 transition ${
+                        image === selectedImage
+                          ? "border-primary ring-2 ring-primary/25"
+                          : "border-border/60 hover:border-primary/60"
+                      }`}
+                      onClick={() => {
+                        setSelectedImage(image);
+                        setImageZoomOpen(true);
+                      }}
+                    >
+                      <img
+                        src={image}
+                        alt={`${business.name} - foto ${
+                          allImages.indexOf(image) + 1
+                        }`}
+                        draggable={false}
+                        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="mb-6 flex h-36 items-center justify-center rounded-lg border border-dashed bg-muted/30 text-sm text-muted-foreground">
+                Imagem indisponível
+              </div>
+            )}
 
             {business.description && (
               <p className="font-hand text-xl leading-6 text-gray-600 mb-8">
@@ -317,7 +369,7 @@ export function BusinessDetail({
       </SheetContent>
 
       <Dialog open={imageZoomOpen} onOpenChange={setImageZoomOpen}>
-        <DialogContent className="max-w-[min(94vw,1100px)] border-0 bg-transparent p-0 shadow-none [&>button]:bg-background/80 [&>button]:text-foreground [&>button]:backdrop-blur-sm">
+        <DialogContent className="max-w-[min(94vw,1100px)] border-0 bg-transparent p-0 shadow-none [&>button]:right-3 [&>button]:top-3 [&>button]:rounded-full [&>button]:bg-background/80 [&>button]:text-primary [&>button]:shadow-sm [&>button]:backdrop-blur-sm [&>button]:hover:bg-background/90">
           <DialogTitle className="sr-only">
             Imagem ampliada de {business.name}
           </DialogTitle>
@@ -336,9 +388,8 @@ export function BusinessDetail({
                 <>
                   <Button
                     type="button"
-                    variant="secondary"
                     size="icon"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 text-secondary shadow-sm backdrop-blur-sm hover:bg-background/90"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 text-primary shadow-sm backdrop-blur-sm hover:bg-background/90"
                     onClick={prevImage}
                   >
                     <ChevronLeft className="h-5 w-5" />
@@ -347,9 +398,8 @@ export function BusinessDetail({
 
                   <Button
                     type="button"
-                    variant="secondary"
                     size="icon"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 text-secondary shadow-sm backdrop-blur-sm hover:bg-background/90"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 text-primary shadow-sm backdrop-blur-sm hover:bg-background/90"
                     onClick={nextImage}
                   >
                     <ChevronRight className="h-5 w-5" />
@@ -357,16 +407,16 @@ export function BusinessDetail({
                   </Button>
 
                   <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-background/80 px-3 py-2 shadow-sm backdrop-blur-sm">
-                    {allImages.map((_, index) => (
+                    {allImages.map((image, index) => (
                       <button
-                        key={index}
+                        key={image}
                         type="button"
                         className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                          index === currentImageIndex
-                            ? "bg-secondary"
+                          index === selectedImageIndex
+                            ? "bg-primary"
                             : "bg-muted"
                         }`}
-                        onClick={() => setCurrentImageIndex(index)}
+                        onClick={() => setSelectedImage(image)}
                       >
                         <span className="sr-only">Ver imagem {index + 1}</span>
                       </button>

@@ -29,12 +29,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function getRedirectPath(state: unknown) {
   if (!isRecord(state) || !isRecord(state.from)) {
-    return "/dashboard";
+    return "/";
   }
 
   return typeof state.from.pathname === "string"
     ? state.from.pathname
-    : "/dashboard";
+    : "/";
 }
 
 export default function LoginPage() {
@@ -61,7 +61,7 @@ export default function LoginPage() {
         email: data.email.trim(),
         password: data.password,
       });
-      toast.success("Sessão iniciada.");
+
       navigate(redirectTo, { replace: true });
     } catch {
       toast.error("E-mail ou senha inválidos.");
@@ -69,7 +69,7 @@ export default function LoginPage() {
   };
 
   if (!isLoading && isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -137,9 +137,14 @@ export default function LoginPage() {
               Criar cadastro
             </Link>
           </p>
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            Quer cadastrar uma loja?{" "}
+            <Link to="/cadastrar" className="font-medium text-primary">
+              Cadastrar loja
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>
   );
 }
-

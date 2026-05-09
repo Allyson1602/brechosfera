@@ -19,4 +19,20 @@ export type RegisterInput = {
   email: string;
   password: string;
   emailVerificationCode: string;
+  acceptedTerms: boolean;
+};
+
+export type RequestAccountUpdateVerificationCodeInput = {
+  email?: string;
+};
+
+export type UpdateAccountInput = {
+  name?: string;
+  email?: string;
+  password?: string;
+  accountVerificationCode?: string;
+};
+
+export type DeleteAccountInput = {
+  currentPassword: string;
 };

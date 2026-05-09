@@ -11,7 +11,8 @@ import CreateEventPage from "./pages/CreateEventPage";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import AuthRegisterPage from "./pages/AuthRegisterPage";
-import DashboardPage from "./pages/DashboardPage";
+import AccountPage from "./pages/AccountPage";
+import TermsPage from "./pages/TermsPage";
 import NotFound from "./pages/NotFound";
 import { ApolloProvider } from "@apollo/client/react";
 import { Analytics } from "@vercel/analytics/react";
@@ -44,11 +45,12 @@ const App = () => (
                 <Route path="/cadastrar" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<AuthRegisterPage />} />
+                <Route path="/termos-de-uso" element={<TermsPage />} />
                 <Route
-                  path="/dashboard"
+                  path="/conta"
                   element={
                     <ProtectedRoute>
-                      <DashboardPage />
+                      <AccountPage />
                     </ProtectedRoute>
                   }
                 />
@@ -63,4 +65,3 @@ const App = () => (
 );
 
 export default App;
-

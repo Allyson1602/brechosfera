@@ -4,14 +4,24 @@ import { useApolloClient } from "@apollo/client/react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client/react";
 import {
+  DELETE_ACCOUNT_MUTATION,
   LOGIN_MUTATION,
   LOGOUT_MUTATION,
   ME_QUERY,
+  REQUEST_ACCOUNT_UPDATE_VERIFICATION_CODE_MUTATION,
   REQUEST_EMAIL_VERIFICATION_CODE_MUTATION,
   REFRESH_SESSION_MUTATION,
   REGISTER_MUTATION,
+  UPDATE_ACCOUNT_MUTATION,
 } from "@/lib/graphql/queries/auth";
-import type { AuthUser, LoginInput, RegisterInput } from "@/types/auth";
+import type {
+  AuthUser,
+  DeleteAccountInput,
+  LoginInput,
+  RegisterInput,
+  RequestAccountUpdateVerificationCodeInput,
+  UpdateAccountInput,
+} from "@/types/auth";
 import { AuthContext, type AuthContextValue } from "./auth-context";
 
 type AuthPayload = {
@@ -34,6 +44,18 @@ type RegisterMutationResult = {
 
 type RequestEmailVerificationCodeMutationResult = {
   requestEmailVerificationCode: Pick<AuthPayload, "success" | "message">;
+};
+
+type RequestAccountUpdateVerificationCodeMutationResult = {
+  requestAccountUpdateVerificationCode: Pick<AuthPayload, "success" | "message">;
+};
+
+type UpdateAccountMutationResult = {
+  updateAccount: AuthPayload;
+};
+
+type DeleteAccountMutationResult = {
+  deleteAccount: Pick<AuthPayload, "success" | "message">;
 };
 
 type RefreshSessionMutationResult = {
@@ -101,6 +123,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
       RequestEmailVerificationCodeMutationResult,
       { email: string }
     >(REQUEST_EMAIL_VERIFICATION_CODE_MUTATION);
+  const [
+    requestAccountUpdateVerificationCodeMutation,
+    { loading: isRequestingAccountCode },
+  ] = useMutation<
+    RequestAccountUpdateVerificationCodeMutationResult,
+    { input: RequestAccountUpdateVerificationCodeInput }
+  >(REQUEST_ACCOUNT_UPDATE_VERIFICATION_CODE_MUTATION);
+  const [updateAccountMutation, { loading: isUpdatingAccount }] = useMutation<
+    UpdateAccountMutationResult,
+    { input: UpdateAccountInput }
+  >(UPDATE_ACCOUNT_MUTATION);
+  const [deleteAccountMutation, { loading: isDeletingAccount }] = useMutation<
+    DeleteAccountMutationResult,
+    { input: DeleteAccountInput }
+  >(DELETE_ACCOUNT_MUTATION);
   const [logoutMutation, { loading: isLoggingOut }] =
     useMutation<LogoutMutationResult>(LOGOUT_MUTATION);
   const [refreshSessionMutation, { loading: isRefreshing }] =
@@ -201,6 +238,46 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [requestEmailVerificationCodeMutation],
   );
 
+  const requestAccountUpdateVerificationCode = useCallback(
+    async (input: RequestAccountUpdateVerificationCodeInput) => {
+      await requestAccountUpdateVerificationCodeMutation({
+        variables: {
+          input: {
+            ...(input.email ? { email: input.email.trim() } : {}),
+          },
+        },
+      });
+    },
+    [requestAccountUpdateVerificationCodeMutation],
+  );
+
+  const updateAccount = useCallback(
+    async (input: UpdateAccountInput) => {
+      const { data } = await updateAccountMutation({
+        variables: { input },
+      });
+      const nextUser = data?.updateAccount?.user;
+
+      if (!nextUser) {
+        throw new Error("Não foi possível atualizar a conta.");
+      }
+
+      setUser(nextUser);
+      return nextUser;
+    },
+    [updateAccountMutation],
+  );
+
+  const deleteAccount = useCallback(
+    async (input: DeleteAccountInput) => {
+      await deleteAccountMutation({ variables: { input } });
+      setUser(null);
+      await client.clearStore();
+      navigate("/", { replace: true });
+    },
+    [client, deleteAccountMutation, navigate],
+  );
+
   const logout = useCallback(async () => {
     try {
       await logoutMutation();
@@ -220,11 +297,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
         isLoggingIn ||
         isRegistering ||
         isRequestingCode ||
+        isRequestingAccountCode ||
+        isUpdatingAccount ||
+        isDeletingAccount ||
         isLoggingOut ||
         isRefreshing,
       login,
       register,
       requestEmailVerificationCode,
+      requestAccountUpdateVerificationCode,
+      updateAccount,
+      deleteAccount,
       logout,
       refreshSession,
       loadMe,
@@ -236,11 +319,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
       isLoggingIn,
       isRegistering,
       isRequestingCode,
+      isRequestingAccountCode,
+      isUpdatingAccount,
+      isDeletingAccount,
       isLoggingOut,
       isRefreshing,
       login,
       register,
       requestEmailVerificationCode,
+      requestAccountUpdateVerificationCode,
+      updateAccount,
+      deleteAccount,
       logout,
       refreshSession,
       loadMe,

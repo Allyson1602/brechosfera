@@ -34,7 +34,7 @@ export function ProtectedRoute({
   }
 
   if (allowedRoles?.length && (!user || !allowedRoles.includes(user.role))) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/conta" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;
